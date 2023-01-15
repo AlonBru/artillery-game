@@ -58,13 +58,19 @@ export function BoardCell ( {
         }
         const dx = Math.abs( playerPosition.x - x );
         const dy = Math.abs( playerPosition.y - y );
-        if ( dx <= PLAYER_MOVEMENT && dy <= PLAYER_MOVEMENT ) {
-
-          return true;
-
-        }
+        const targetInRange = dx <= PLAYER_MOVEMENT && dy <= PLAYER_MOVEMENT;
+        return targetInRange;
 
       }
+      case 'FIRE':
+
+        if ( !playerPosition ) {
+
+          throw new Error( 'tried to fire without placing your piece' );
+
+        }
+        // don't allow to shoot at your self
+        return !( x === playerPosition.x && y === playerPosition.y );
 
       default:
         return false;

@@ -15,13 +15,15 @@ type Props = {
   commandMode: CommandMode;
   loaded: boolean;
   dispatch:DispatchWithoutAction;
+  cursor:Vector2|null;
 };
 
 export function CommandPanel ( {
   commandMode,
   setCommandMode,
   loaded,
-  dispatch
+  dispatch,
+  cursor
 }: Props ) {
 
   const fireMode = loaded
@@ -31,17 +33,19 @@ export function CommandPanel ( {
   if ( commandMode === 'INITIAL' ) {
 
     return <div>
-      please place your unit <br/>
+      please select position to place your unit <br/>
       <ModeButton
         onClick={dispatch}
-        selected={true}>
+        selected={!!cursor}
+        disabled={!cursor}
+      >
           ACCEPT
       </ModeButton>
     </div>;
 
   }
+  const canAct = commandMode === 'RELOAD' || ( commandMode !== null && cursor !== null );
   return <div>
-
     <h2>
       Select you command
     </h2>
@@ -56,6 +60,15 @@ export function CommandPanel ( {
       onClick={() => setCommandMode( fireMode )}
     >
       {fireMode}
+    </ModeButton>
+    <br/>
+    <br/>
+    <ModeButton
+      onClick={dispatch}
+      selected={canAct}
+      disabled={!canAct}
+    >
+          ACCEPT
     </ModeButton>
   </div>;
 

@@ -11,6 +11,8 @@ const Root = styled.section`
   display: grid;
   grid-template-columns: max(400px, 50%) 50%;
   background: #333;
+  grid-column-gap: 20px;
+  padding:10px;
 `;
 
 function App () {
@@ -18,10 +20,18 @@ function App () {
   const playerPositionRef = useRef<Vector2 | null>( null );
   const [ cursor, setCursor ] = useState<Vector2|null>( null );
   const [ commandMode, setCommandMode ] = useState<CommandMode>( 'INITIAL' );
+  const [ loaded, setLoaded ] = useState<boolean>( true );
   const [ board, dispatch ] = useReducer<ReducerWithoutAction<Board>>(
     ( boardState ) => {
 
       const command = commandMode;
+      if ( command === 'RELOAD' ) {
+
+        setLoaded( true );
+        setCommandMode( 'MOVE' );
+        return boardState;
+
+      }
       if ( !cursor ) {
 
         throw new Error( 'action dispatched without selecting a target' );
@@ -48,7 +58,12 @@ function App () {
 
 
       }
-      setCursor( null );
+      if ( command === 'FIRE' ) {
+
+        setLoaded( false );
+        setCommandMode( 'MOVE' );
+
+      }
       return newBoard;
 
     },
@@ -60,9 +75,9 @@ function App () {
       setCursor( null );
 
     },
-    [ commandMode ]
+    [ commandMode,
+      board ]
   );
-  const [ loaded, setLoaded ] = useState<boolean>( true );
 
   return (
     <Root>
@@ -77,6 +92,7 @@ function App () {
         dispatch={dispatch}
         setCommandMode={setCommandMode}
         loaded={loaded}
+        cursor={cursor}
         commandMode={commandMode}
       />
     </Root>
