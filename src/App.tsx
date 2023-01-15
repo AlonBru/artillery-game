@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import styled from 'styled-components'
+import { useState } from 'react';
+import styled from 'styled-components';
 
 const BoardRoot = styled.main`
   margin: auto;
@@ -39,21 +39,29 @@ const BoardCell = styled.div`
   
 `;
 
-function App() {
-  const [board, setBoard] = useState(new Array(8).fill(null).map(()=>new Array(8).fill(null)))
+function App () {
+
+  const [ board, setBoard ] = useState( new Array( 8 ).fill( null )
+  .map( () => new Array( 8 ).fill( null ) ) );
   return (
     <BoardRoot>
-      {board.map((column,x)=>{
-        return <BoardColumn key={x}>
-        {column.map((item,y)=><BoardCell
+      {board.map( ( column, x ) => <BoardColumn key={x}>
+        {column.map( ( item, y ) => <BoardCell
           key={`${x}+${y}`}
-          onClick={()=>{console.log(x,y)}}
-        />)
+          onClick={() => {
+
+            console.log(
+              x,
+              y
+            );
+
+          }}
+        /> )
         }
-        </BoardColumn>
-      })}
+      </BoardColumn> )}
     </BoardRoot>
-  )
+  );
+
 }
 
-export default App
+export default App;
