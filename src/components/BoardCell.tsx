@@ -9,6 +9,7 @@ const BoardCellRoot = styled.button`
   width: 100%;
   height: 100%;
   background: navy;
+  position: relative;
   :not(:disabled):hover{
     outline: yellow solid 1px;
   }

@@ -1,8 +1,5 @@
-import {
-  useReducer, Reducer, useRef, SetStateAction, Dispatch
-} from 'react';
+import { SetStateAction, Dispatch } from 'react';
 import styled from 'styled-components';
-import { BOARD_SIZE } from '../constants';
 import { BoardCell } from './BoardCell';
 import { BoardColumn } from './styled';
 
@@ -22,76 +19,59 @@ const Player = styled.div`
   background: red;
   border-radius: 50%;
 `;
-
-function getFreshBoard ():Board {
-
-  return new Array( BOARD_SIZE ).fill( null )
-  .map( () => new Array( BOARD_SIZE ).fill( null ) );
-
-}
+const Marker = styled.div`
+  margin: auto;
+  text-align: center;
+  color: darkred;
+  font-family: serif;
+  font-size: 2rem;
+  position: absolute;
+  width: 100%;
+  top:50%;
+  transform: translateY(-50%);
+`;
 type BoardProps = {
   commandMode: CommandMode;
-  setCommandMode:Dispatch<SetStateAction<CommandMode>>
+  cursor:Vector2|null;
+  setCursor:Dispatch<SetStateAction<Vector2|null>>;
+  board:Board;
+  playerPosition:Vector2|null;
 };
 
 export function Board ( {
   commandMode,
-  setCommandMode
+  playerPosition,
+  cursor,
+  setCursor,
+  board
 }: BoardProps ) {
 
-  const playerPositionRef = useRef<Vector2 | null>( null );
-
-  const [ board, dispatch ] = useReducer<Reducer<Board, BoardAction>>(
-    ( boardState, { position, type } ) => {
-
-      const newBoard = [ ...boardState ];
-      if ( type === 'INITIAL' ) {
-
-        newBoard[position.x][position.y] = 'PLAYER';
-        playerPositionRef.current = {
-          x: position.x,
-          y: position.y,
-        };
-        setCommandMode( 'MOVE' );
-
-      }
-      if ( type === 'MOVE' ) {
-
-        const playerPosition = playerPositionRef.current as Vector2;
-        newBoard[playerPosition.x][playerPosition.y] = null;
-        newBoard[position.x][position.y] = 'PLAYER';
-        playerPosition.x = position.x;
-        playerPosition.y = position.y;
-
-
-      }
-      return newBoard;
-
-    },
-    getFreshBoard()
-  );
   return <BoardRoot>
     {board.map( ( column, x ) => <BoardColumn key={x}>
-      {column.map( ( item, y ) => <BoardCell
-        commandMode={commandMode}
-        playerPosition={playerPositionRef.current}
-        x={x}
-        y={y}
-        key={`${x}+${y}`}
-        onClick={() => {
+      {column.map( ( item, y ) => {
 
-          dispatch( {
-            position: {
+        const marked = x === cursor?.x && y === cursor?.y;
+        return <BoardCell
+          commandMode={commandMode}
+          playerPosition={playerPosition}
+          x={x}
+          y={y}
+          key={`${x}+${y}`}
+          onClick={() => {
+
+            setCursor( {
               x,
               y
-            },
-            type: commandMode
-          } );
+            } );
 
-        }}>
+          }}>
+          <>
+            { marked && <Marker>X</Marker>}
+            {item && <Player />}
+          </>
+        </BoardCell>;
 
-        {item && <Player />}
-      </BoardCell> )}
+      } )}
     </BoardColumn> )}
   </BoardRoot>;
 
