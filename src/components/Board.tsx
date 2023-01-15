@@ -28,6 +28,7 @@ const Marker = styled.div`
   position: absolute;
   width: 100%;
   top:50%;
+  pointer-events: none;
   transform: translateY(-50%);
 `;
 type BoardProps = {
