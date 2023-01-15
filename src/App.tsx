@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import {
+  useReducer, useState, Reducer, useRef
+} from 'react';
 import styled from 'styled-components';
 
 const BoardRoot = styled.main`
@@ -38,11 +40,55 @@ const BoardCell = styled.div`
   
   
 `;
+const Player = styled.div`
+  width: 66%;
+  height: 66%;
+  margin: auto;
+  background: red;
+  border-radius: 50%;
+`;
+
+type BoardAction = {
+  position:Vector2;
+  type:CommandMode;
+}
+type Item = 'PLAYER'|null
+type Board = Array<Item[]>
 
 function App () {
 
-  const [ board, setBoard ] = useState( new Array( 8 ).fill( null )
-  .map( () => new Array( 8 ).fill( null ) ) );
+  const playerPositionRef = useRef<Vector2|null>( null );
+  const [ commandMode, setCommandMode ] = useState<CommandMode>( 'INITIAL' );
+  const [ board, dispatch ] = useReducer<Reducer<Board, BoardAction>>(
+    ( board, { position, type } ) => {
+
+      const newBoard = [ ...board ];
+      if ( type === 'INITIAL' ) {
+
+        newBoard[position.x][position.y] = 'PLAYER';
+        playerPositionRef.current = {
+          x: position.x,
+          y: position.y,
+        };
+        setCommandMode( 'MOVE' );
+
+      }
+      if ( type === 'MOVE' ) {
+
+        const playerPosition = playerPositionRef.current as Vector2;
+        newBoard[playerPosition.x][playerPosition.y] = null;
+        newBoard[position.x][position.y] = 'PLAYER';
+        playerPosition.x = position.x;
+        playerPosition.y = position.y;
+
+
+      }
+      return newBoard;
+
+    },
+    getFreshBoard()
+  );
+
   return (
     <BoardRoot>
       {board.map( ( column, x ) => <BoardColumn key={x}>
@@ -51,12 +97,20 @@ function App () {
           onClick={() => {
 
             console.log(
+              board,
               x,
               y
             );
+            dispatch( {
+              position: { x,
+                y },
+              type: commandMode
+            } );
 
-          }}
-        /> )
+          }}>
+
+          {item && <Player/>}
+        </BoardCell> )
         }
       </BoardColumn> )}
     </BoardRoot>
@@ -65,3 +119,10 @@ function App () {
 }
 
 export default App;
+
+function getFreshBoard ():Board {
+
+  return new Array( 8 ).fill( null )
+  .map( () => new Array( 8 ).fill( null ) );
+
+}
