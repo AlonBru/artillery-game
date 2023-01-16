@@ -1,5 +1,6 @@
 import { Dispatch, DispatchWithoutAction, SetStateAction } from 'react';
 import styled from 'styled-components';
+import { useGameLogic } from '../hooks/useGameManager';
 
 const ModeButton = styled.button<{selected?:boolean}>`
   --color: ${( { selected } ) => ( selected
@@ -13,7 +14,6 @@ const ModeButton = styled.button<{selected?:boolean}>`
 type Props = {
   setCommandMode: Dispatch<SetStateAction<CommandMode>>;
   commandMode: CommandMode;
-  loaded: boolean;
   dispatch:DispatchWithoutAction;
   cursor:Vector2|null;
 };
@@ -21,11 +21,11 @@ type Props = {
 export function CommandPanel ( {
   commandMode,
   setCommandMode,
-  loaded,
   dispatch,
   cursor
 }: Props ) {
 
+  const { loaded } = useGameLogic();
   const fireMode = loaded
     ? 'FIRE'
     : 'RELOAD';
