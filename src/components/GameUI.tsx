@@ -22,7 +22,7 @@ export function GameUI () {
 
   const {
     status,
-    sendEvent,
+    sendCommand: sendEvent,
     playerPosition,
     board,
     awaitingPlayerInput

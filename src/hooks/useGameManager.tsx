@@ -7,18 +7,20 @@ import {
 } from 'react';
 import { getFreshBoard } from '../helpers/board';
 import { BOARD_SIZE } from '../constants';
-import { useConnection } from './useConnection';
+import { useConnectionContext } from './useConnection';
+import { useLastKnownPosition } from './useLastKnownPosition';
 
 
 type GameStatus = 'IDLE' | 'RECEIVED' | 'SENT' | 'WORKING';
 
 type GameLogic = {
-  sendEvent( move:Command ):void;
+  sendCommand( move:Command ):void;
   status: GameStatus;
   board:Board;
   loaded:boolean;
   awaitingPlayerInput:boolean;
   playerPosition: Vector2|null;
+  lastKnown: Vector2|null;
 };
 const gameLogicContext = createContext<GameLogic|null>( null );
 
@@ -51,7 +53,6 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
       default:
         throw new Error( `Tried sending when the state is:"${currentsState}"` );
-        break;
 
     }
 
@@ -75,11 +76,10 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     }
 
   }
-
-  const conn = useConnection();
-
+  const conn = useConnectionContext();
   const playerPositionRef = useRef<Vector2 | null>( null );
   const [ loaded, setLoaded ] = useState<boolean>( true );
+  const lastKnown = useLastKnownPosition( );
   type Action = {
     own: boolean;
     move: Command;
@@ -131,6 +131,20 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
         } else if ( command === 'FIRE' ) {
 
+          if ( !playerPositionRef.current ) {
+
+            throw new Error( 'Fired without placing a player' );
+
+          }
+          const { current: playerPosition } = playerPositionRef;
+          const { target } = move;
+          if ( playerPosition.x === target.x && playerPosition.y === target.y ) {
+            // handle hit
+          }
+          conn.send( {
+            type: 'position',
+            data: playerPosition
+          } );
           fire( move.target );
 
         }
@@ -141,8 +155,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     ),
     getFreshBoard( BOARD_SIZE )
   );
-
-  const [ { status }, dispatchMove ] = useReducer<Reducer<{ status: GameStatus; moves: Action[]; }, Action>>(
+  const [ { status }, dispatchCommand ] = useReducer<Reducer<{ status: GameStatus; moves: Action[]; }, Action>>(
     ( { status: state, moves }, action ) => {
 
       const newStatus = action.own
@@ -173,14 +186,27 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
   useEffect(
     () => {
 
+      function handleMessage ( message:GameMessage ) {
+
+        switch ( message.type ) {
+
+          case 'command':
+            dispatchCommand( {
+              own: false,
+              move: message.data
+            } );
+            break;
+          default:
+            break;
+
+        }
+
+      }
       conn.on(
         'data',
         ( data ) => {
 
-          dispatchMove( {
-            own: false,
-            move: data as Command
-          } );
+          handleMessage( data as GameMessage );
 
         }
       );
@@ -193,22 +219,27 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     },
     []
   );
-  function sendEvent ( move: Command ) {
 
-    conn.send( move );
-    dispatchMove( {
+  function sendCommand ( command: Command ) {
+
+    conn.send( {
+      type: 'command',
+      data: command
+    } );
+    dispatchCommand( {
       own: true,
-      move
+      move: command
     } );
 
   }
   return <gameLogicContext.Provider value={{
-    sendEvent,
+    sendCommand,
     status,
     board,
     loaded,
     awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
-    playerPosition: playerPositionRef.current
+    playerPosition: playerPositionRef.current,
+    lastKnown
   }}>
     {children}
   </gameLogicContext.Provider>;

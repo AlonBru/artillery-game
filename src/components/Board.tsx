@@ -1,5 +1,6 @@
 import { SetStateAction, Dispatch } from 'react';
 import styled from 'styled-components';
+import { useGameLogic } from '../hooks/useGameManager';
 import { BoardCell } from './BoardCell';
 import { BoardColumn } from './styled';
 
@@ -38,6 +39,18 @@ const Marker = styled.div`
   pointer-events: none;
   transform: translateY(-50%);
 `;
+const LastKnownPosition = styled.div`
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 10px 0 10px;
+  border-color: #007bff transparent transparent transparent;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: auto;
+  transform: rotateZ(360deg) translate(-50%);
+`;
 type BoardProps = {
   commandMode: CommandMode;
   cursor:Vector2|null;
@@ -54,11 +67,13 @@ export function Board ( {
   board
 }: BoardProps ) {
 
+  const { lastKnown } = useGameLogic();
   return <BoardRoot>
     {board.map( ( column, x ) => <BoardColumn key={x}>
       {column.map( ( item, y ) => {
 
         const marked = x === cursor?.x && y === cursor?.y;
+        const isLastKnown = x === lastKnown?.x && y === lastKnown.y;
         return <BoardCell
           commandMode={commandMode}
           playerPosition={playerPosition}
@@ -77,6 +92,7 @@ export function Board ( {
             { marked && <Marker>X</Marker>}
             {item === 'PLAYER' && <Player />}
             {item === 'CRATER' && <Crater />}
+            {isLastKnown && <LastKnownPosition/>}
           </>
         </BoardCell>;
 

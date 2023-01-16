@@ -1,9 +1,13 @@
 import { createContext, useContext } from 'react';
 import { DataConnection } from 'peerjs';
 
-export const connectionContext = createContext<DataConnection|null>( null );
+interface Connection extends DataConnection{
+  send( message:GameMessage ):void
+}
 
-export function useConnection () {
+export const connectionContext = createContext<Connection|null>( null );
+
+export function useConnectionContext () {
 
   const context = useContext( connectionContext );
   if ( !context ) {
