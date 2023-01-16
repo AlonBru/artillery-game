@@ -19,6 +19,13 @@ const Player = styled.div`
   background: red;
   border-radius: 50%;
 `;
+const Crater = styled.div`
+  width: 66%;
+  height: 66%;
+  margin: auto;
+  background: black;
+  border-radius: 50%;
+`;
 const Marker = styled.div`
   margin: auto;
   text-align: center;
@@ -68,7 +75,8 @@ export function Board ( {
           }}>
           <>
             { marked && <Marker>X</Marker>}
-            {item && <Player />}
+            {item === 'PLAYER' && <Player />}
+            {item === 'CRATER' && <Crater />}
           </>
         </BoardCell>;
 

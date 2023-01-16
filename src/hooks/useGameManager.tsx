@@ -88,6 +88,11 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     ( boardState, actions ) => actions.reduce<Board>(
       ( board, { own, move } ) => {
 
+        function fire ( { x, y }:Vector2 ) {
+
+          board[x][y] = 'CRATER';
+
+        }
         const command = move.type;
         if ( own ) {
 
@@ -120,13 +125,13 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
           if ( command === 'FIRE' ) {
 
             setLoaded( false );
-            console.log( 'implement firing' );
+            fire( cursor );
 
           }
 
         } else if ( command === 'FIRE' ) {
 
-          console.log( 'implement firing' );
+          fire( move.target );
 
         }
         return board;

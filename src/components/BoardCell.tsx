@@ -36,7 +36,7 @@ export function BoardCell ( {
   commandMode: CommandMode;
 } & Pick<ComponentPropsWithoutRef<'button'>, 'children' | 'onClick'> ) {
 
-  const { awaitingPlayerInput } = useGameLogic();
+  const { awaitingPlayerInput, board } = useGameLogic();
 
   function canSelect (): boolean {
 
@@ -62,6 +62,11 @@ export function BoardCell ( {
         if ( !playerPosition ) {
 
           throw new Error( 'tried to move without placing your piece' );
+
+        }
+        if ( board[x][y] === 'CRATER' ) {
+
+          return false;
 
         }
         const dx = Math.abs( playerPosition.x - x );

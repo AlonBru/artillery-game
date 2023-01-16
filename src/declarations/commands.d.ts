@@ -3,7 +3,7 @@ type CommandMode = 'INITIAL'|'MOVE'|'FIRE'|'RELOAD';
 type BoardAction = {
   type:CommandMode;
 }
-type Item = 'PLAYER'|null
+type Item = 'PLAYER'|'CRATER'|null
 type Board = Array<Item[]>
 type MoveCommand = {
   type: 'MOVE';
