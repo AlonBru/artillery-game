@@ -25,10 +25,11 @@ export function CommandPanel ( {
   cursor
 }: Props ) {
 
-  const { loaded } = useGameLogic();
+  const { loaded, awaitingPlayerInput } = useGameLogic();
   const fireMode = loaded
     ? 'FIRE'
     : 'RELOAD';
+
 
   if ( commandMode === 'INITIAL' ) {
 
@@ -37,14 +38,18 @@ export function CommandPanel ( {
       <ModeButton
         onClick={dispatch}
         selected={!!cursor}
-        disabled={!cursor}
+        disabled={!awaitingPlayerInput || !cursor}
       >
           ACCEPT
       </ModeButton>
     </div>;
 
   }
-  const canAct = commandMode === 'RELOAD' || ( commandMode !== null && cursor !== null );
+  const commandInputValid = commandMode === 'RELOAD' || ( commandMode !== null && cursor !== null );
+  const canAct =
+  awaitingPlayerInput &&
+  commandInputValid;
+
   return <div>
     <h2>
       Select you command

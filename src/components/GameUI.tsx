@@ -6,12 +6,15 @@ import { Board } from './Board';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
 
-const Root = styled.section`
+const Root = styled.section<{waitingForPeer:boolean}>`
   display: grid;
   grid-template-columns: max(400px, 50%) 50%;
   background: #333;
   grid-column-gap: 20px;
   padding:10px;
+  ${( { waitingForPeer } ) => waitingForPeer && `
+    cursor: wait;
+  `}
 `;
 
 
@@ -21,7 +24,8 @@ export function GameUI () {
     status,
     sendEvent,
     playerPosition,
-    board
+    board,
+    awaitingPlayerInput
   } = useGameLogic();
   const [ cursor, setCursor ] = useState<Vector2 | null>( null );
   const [ commandMode, setCommandMode ] = useState<CommandMode>( 'INITIAL' );
@@ -72,6 +76,7 @@ export function GameUI () {
     <div>
       <span> {status}</span>
       <Root
+        waitingForPeer={!awaitingPlayerInput}
         onContextMenu={( e ) => {
 
           e.preventDefault();

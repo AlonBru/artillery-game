@@ -11,15 +11,13 @@ import { useConnection } from './useConnection';
 
 
 type GameStatus = 'IDLE' | 'RECEIVED' | 'SENT' | 'WORKING';
-type Action = {
-  own: boolean;
-  move: Command;
-};
+
 type GameLogic = {
   sendEvent( move:Command ):void;
   status: GameStatus;
   board:Board;
   loaded:boolean;
+  awaitingPlayerInput:boolean;
   playerPosition: Vector2|null;
 };
 const gameLogicContext = createContext<GameLogic|null>( null );
@@ -82,6 +80,10 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
   const playerPositionRef = useRef<Vector2 | null>( null );
   const [ loaded, setLoaded ] = useState<boolean>( true );
+  type Action = {
+    own: boolean;
+    move: Command;
+  };
   const [ board, dispatchBoard ] = useReducer<Reducer<Board, Action[]>>(
     ( boardState, actions ) => actions.reduce<Board>(
       ( board, { own, move } ) => {
@@ -200,6 +202,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     status,
     board,
     loaded,
+    awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
     playerPosition: playerPositionRef.current
   }}>
     {children}

@@ -1,6 +1,7 @@
 import { ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
 import { BOARD_SIZE, PLAYER_MOVEMENT } from '../constants';
+import { useGameLogic } from '../hooks/useGameManager';
 import { BoardColumn } from './styled';
 
 const BoardCellRoot = styled.button`
@@ -35,8 +36,15 @@ export function BoardCell ( {
   commandMode: CommandMode;
 } & Pick<ComponentPropsWithoutRef<'button'>, 'children' | 'onClick'> ) {
 
+  const { awaitingPlayerInput } = useGameLogic();
+
   function canSelect (): boolean {
 
+    if ( !awaitingPlayerInput ) {
+
+      return false;
+
+    }
     switch ( commandMode ) {
 
       case 'INITIAL': {
