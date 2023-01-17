@@ -21,11 +21,16 @@ export function ConnectionPage ( { connect, id }:{id: string | undefined, connec
     <input
       value={peerId}
       onChange={( { target: { value } } ) => setId( value )} />
-    <button onClick={() => {
 
-      connect( peerId );
+    <button
+      disabled={!peerId}
 
-    } }>
+      onClick={() => {
+
+        connect( peerId );
+
+      } }
+    >
       CONNECT
     </button>
   </div>;
