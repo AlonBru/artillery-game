@@ -89,7 +89,12 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
             break;
           case 'FIRE':
 
-            board[x][y] = 'CRATER';
+            board[x][y] = hasHitPlayer(
+              x,
+              y
+            )
+              ? 'DESTROYED'
+              : 'CRATER';
 
             break;
 
@@ -256,6 +261,12 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
   }}>
     {children}
   </gameLogicContext.Provider>;
+  function hasHitPlayer ( x: number, y: number ) {
+
+    return x === playerPositionRef.current?.x &&
+      y === playerPositionRef.current?.y;
+
+  }
   function handleOwnMove ( currentsState: GameStatus ): GameStatus {
 
     switch ( currentsState ) {
@@ -319,11 +330,14 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
     }
     const { target: { x, y } } = command;
-    const hasHitPlayer = x === playerPositionRef.current?.x &&
-    y === playerPositionRef.current?.y;
-    return { hit: hasHitPlayer,
+    const playerHit = hasHitPlayer(
+      x,
+      y
+    );
+    return { hit: playerHit,
       uiHandled: false };
 
   }
+
 
 }

@@ -1,5 +1,5 @@
 
-type Item = 'PLAYER'|'CRATER'|null
+type Item = 'PLAYER'|'CRATER'|'DESTROYED'|null
 type Board = Array<Item[]>
 
 type MoveCommand = {

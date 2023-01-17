@@ -20,6 +20,58 @@ const Player = styled.div`
   background: red;
   border-radius: 50%;
 `;
+const Wreck = styled.div`
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 16px 20px 16px;
+  border-color:  transparent transparent yellow transparent;
+  position: absolute;
+  bottom: 30%;
+  left: 50%;
+  margin: auto;
+  transform-origin: bottom;
+  animation: burning 1s alternate infinite;
+  ::after{
+    content:"";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 3px 10px 10px;
+    border-color:  transparent transparent yellow transparent;
+    position: absolute;
+    top: 5px;
+    left:5px;
+    animation: burning .5s alternate infinite;
+    animation-delay: .5s;
+    opacity: .9;
+  }
+  ::before{
+    opacity: .9;
+    content:"";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 10px 10px 3px;
+    border-color:  transparent transparent yellow transparent;
+    position: absolute;
+    top: 5px;
+    right: -5px;
+    animation: burning .3s alternate infinite;
+    animation-delay: .4s;
+
+  }
+  @keyframes burning {
+    from{
+      transform: translateX(-50%) scaleY(1);
+      filter: hue-rotate(0deg)
+    }
+    to{
+      transform: translateX(-50%) scaleY(1.5);
+      filter: hue-rotate(-40deg)
+    }
+  }
+`;
 const Crater = styled.div`
   width: 66%;
   height: 66%;
@@ -74,6 +126,8 @@ export function Board ( {
 
         const marked = x === cursor?.x && y === cursor?.y;
         const isLastKnown = x === lastKnown?.x && y === lastKnown.y;
+        const cratered = ( [ 'CRATER',
+          'DESTROYED' ] as Item[] ).includes( item );
         return <BoardCell
           commandMode={commandMode}
           playerPosition={playerPosition}
@@ -91,7 +145,8 @@ export function Board ( {
           <>
             { marked && <Marker>X</Marker>}
             {item === 'PLAYER' && <Player />}
-            {item === 'CRATER' && <Crater />}
+            {cratered && <Crater />}
+            {item === 'DESTROYED' && <Wreck />}
             {isLastKnown && <LastKnownPosition/>}
           </>
         </BoardCell>;
