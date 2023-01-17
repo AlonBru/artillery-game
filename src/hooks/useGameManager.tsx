@@ -67,7 +67,6 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
         const { type, target: { x, y } } = command;
 
-        const playerPosition = playerPositionRef.current as Vector2;
         switch ( type ) {
 
           case 'INITIAL':
@@ -81,10 +80,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
             break;
           case 'MOVE':
 
-            board[playerPosition.x][playerPosition.y] = null;
             board[x][y] = 'PLAYER';
-            playerPosition.x = x;
-            playerPosition.y = y;
 
             break;
           case 'FIRE':
@@ -304,15 +300,25 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     }
 
   }
-  function handlePlayerCommand ( { type }:PlayerAction['move'] ):boolean {
+  function handlePlayerCommand ( command:PlayerAction['move'] ):boolean {
 
-    switch ( type ) {
+    switch ( command.type ) {
 
       case 'RELOAD':
         setLoaded( true );
         return true;
       case 'FIRE':
         setLoaded( false );
+        return false;
+      case 'MOVE':
+        {
+
+          const playerPosition = playerPositionRef.current as Vector2;
+          board[playerPosition.x][playerPosition.y] = null;
+          playerPosition.x = command.target.x;
+          playerPosition.y = command.target.y;
+
+        }
         return false;
 
       default:
@@ -334,6 +340,13 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       x,
       y
     );
+    const message:GameMessage = playerHit
+      ? { type: 'hit' }
+      : {
+        type: 'position',
+        data: playerPositionRef.current as Vector2
+      };
+    conn.send( message );
     return { hit: playerHit,
       uiHandled: false };
 
