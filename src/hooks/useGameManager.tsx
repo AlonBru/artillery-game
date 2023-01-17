@@ -22,6 +22,18 @@ type GameLogic = {
   playerPosition: Vector2|null;
   lastKnown: Vector2|null;
 };
+type PlayerAction = {
+  own:true,
+  move: Command;
+
+}
+type PeerAction = {
+  own: false;
+  move:FireCommand|null;
+};
+
+type Action = PlayerAction|PeerAction;
+
 const gameLogicContext = createContext<GameLogic|null>( null );
 
 export function useGameLogic ():GameLogic {
@@ -39,6 +51,179 @@ export function useGameLogic ():GameLogic {
 
 export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'div'>, 'children'> ) {
 
+
+  const conn = useConnectionContext();
+  const playerPositionRef = useRef<Vector2 | null>( null );
+  const [ loaded, setLoaded ] = useState<boolean>( true );
+  const lastKnown = useLastKnownPosition( );
+
+  const [ board, dispatchBoard ] = useReducer<Reducer<Board, UICommand[]>>(
+    ( boardState, actions ) => actions.reduce<Board>(
+      ( board, command ) => {
+
+        const { type, target: { x, y } } = command;
+
+        const playerPosition = playerPositionRef.current as Vector2;
+        switch ( type ) {
+
+          case 'INITIAL':
+
+            board[x][y] = 'PLAYER';
+            playerPositionRef.current = {
+              x,
+              y,
+            };
+
+            break;
+          case 'MOVE':
+
+            board[playerPosition.x][playerPosition.y] = null;
+            board[x][y] = 'PLAYER';
+            playerPosition.x = x;
+            playerPosition.y = y;
+
+            break;
+          case 'FIRE':
+
+            board[x][y] = 'CRATER';
+
+            break;
+
+          default:
+            break;
+
+        }
+
+        return board;
+
+
+      },
+      [ ...boardState ]
+    ),
+    getFreshBoard( BOARD_SIZE )
+  );
+  type Moves = {
+    player: Command;
+    peer: Command|null;
+  } ;
+
+  const [ { status }, dispatchGameAction ] = useReducer<Reducer<{ status: GameStatus; moves: Partial<Moves>| null; }, Action>>(
+    ( { status: state, moves }, action ) => {
+
+      const newStatus = action.own
+        ? handleOwnMove( state )
+        : handlePeerMove( state );
+      const newMoves:Partial<Moves> = {
+        ...moves
+      };
+      if ( action.own ) {
+
+        newMoves.player = action.move;
+
+      } else {
+
+        newMoves.peer = action.move;
+
+      }
+
+      if ( newStatus !== 'WORKING' ) {
+
+        return {
+          status: newStatus,
+          moves: newMoves
+        };
+
+      }
+
+      const handledPlayerCommandUI = handlePlayerCommand( newMoves.player as PlayerAction['move'] );
+      const handledPeerCommandUI = handlePeerCommand( newMoves.peer as PeerAction['move'] );
+      const commands:UICommand[] = [];
+      if ( !handledPlayerCommandUI ) {
+
+        commands.push( newMoves.player as UICommand );
+
+      }
+      if ( !handledPeerCommandUI ) {
+
+        commands.push( newMoves.peer as UICommand );
+
+      }
+      dispatchBoard( commands );
+      return {
+        status: 'IDLE',
+        moves: null
+      };
+
+    },
+    {
+      status: 'IDLE',
+      moves: null
+    }
+  );
+  useEffect(
+    () => {
+
+      function handleMessage ( message:GameMessage ) {
+
+        switch ( message.type ) {
+
+          case 'command':
+            dispatchGameAction( {
+              own: false,
+              move: message.data as FireCommand
+            } );
+            break;
+          default:
+            break;
+
+        }
+
+      }
+      conn.on(
+        'data',
+        ( data ) => {
+
+          handleMessage( data as GameMessage );
+
+        }
+      );
+      return () => {
+
+        conn.removeListener( 'data' );
+
+      };
+
+    },
+    []
+  );
+
+  function sendCommand ( command: Command ) {
+
+
+    conn.send( {
+      type: 'command',
+      data: command.type === 'FIRE'
+        ? command
+        : null
+    } );
+
+    dispatchGameAction( {
+      own: true,
+      move: command
+    } );
+
+  }
+  return <gameLogicContext.Provider value={{
+    sendCommand,
+    status,
+    board,
+    loaded,
+    awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
+    playerPosition: playerPositionRef.current,
+    lastKnown
+  }}>
+    {children}
+  </gameLogicContext.Provider>;
   function handleOwnMove ( currentsState: GameStatus ): GameStatus {
 
     switch ( currentsState ) {
@@ -76,172 +261,38 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     }
 
   }
-  const conn = useConnectionContext();
-  const playerPositionRef = useRef<Vector2 | null>( null );
-  const [ loaded, setLoaded ] = useState<boolean>( true );
-  const lastKnown = useLastKnownPosition( );
-  type Action = {
-    own: boolean;
-    move: Command;
-  };
-  const [ board, dispatchBoard ] = useReducer<Reducer<Board, Action[]>>(
-    ( boardState, actions ) => actions.reduce<Board>(
-      ( board, { own, move } ) => {
+  function handlePlayerCommand ( { type }:PlayerAction['move'] ):boolean {
 
-        function fire ( { x, y }:Vector2 ) {
+    switch ( type ) {
 
-          board[x][y] = 'CRATER';
+      case 'RELOAD':
+        setLoaded( true );
+        return true;
+      case 'FIRE':
+        setLoaded( false );
+        return false;
 
-        }
-        const command = move.type;
-        if ( own ) {
+      default:
+        return false;
 
-          if ( command === 'RELOAD' ) {
-
-            setLoaded( true );
-            return board;
-
-          }
-          const cursor = move.target;
-          if ( command === 'INITIAL' ) {
-
-            board[cursor.x][cursor.y] = 'PLAYER';
-            playerPositionRef.current = {
-              x: cursor.x,
-              y: cursor.y,
-            };
-
-          }
-
-          if ( command === 'MOVE' ) {
-
-            const playerPosition = playerPositionRef.current as Vector2;
-            board[playerPosition.x][playerPosition.y] = null;
-            board[cursor.x][cursor.y] = 'PLAYER';
-            playerPosition.x = cursor.x;
-            playerPosition.y = cursor.y;
-
-          }
-          if ( command === 'FIRE' ) {
-
-            setLoaded( false );
-            fire( cursor );
-
-          }
-
-        } else if ( command === 'FIRE' ) {
-
-          if ( !playerPositionRef.current ) {
-
-            throw new Error( 'Fired without placing a player' );
-
-          }
-          const { current: playerPosition } = playerPositionRef;
-          const { target } = move;
-          if ( playerPosition.x === target.x && playerPosition.y === target.y ) {
-            // handle hit
-          }
-          conn.send( {
-            type: 'position',
-            data: playerPosition
-          } );
-          fire( move.target );
-
-        }
-        return board;
-
-      },
-      [ ...boardState ]
-    ),
-    getFreshBoard( BOARD_SIZE )
-  );
-  const [ { status }, dispatchCommand ] = useReducer<Reducer<{ status: GameStatus; moves: Action[]; }, Action>>(
-    ( { status: state, moves }, action ) => {
-
-      const newStatus = action.own
-        ? handleOwnMove( state )
-        : handlePeerMove( state );
-      const newMoves = [ ...moves,
-        action ];
-      if ( newStatus !== 'WORKING' ) {
-
-        return {
-          status: newStatus,
-          moves: newMoves
-        };
-
-      }
-      dispatchBoard( newMoves );
-      return {
-        status: 'IDLE',
-        moves: []
-      };
-
-    },
-    {
-      status: 'IDLE',
-      moves: []
     }
-  );
-  useEffect(
-    () => {
-
-      function handleMessage ( message:GameMessage ) {
-
-        switch ( message.type ) {
-
-          case 'command':
-            dispatchCommand( {
-              own: false,
-              move: message.data
-            } );
-            break;
-          default:
-            break;
-
-        }
-
-      }
-      conn.on(
-        'data',
-        ( data ) => {
-
-          handleMessage( data as GameMessage );
-
-        }
-      );
-      return () => {
-
-        conn.removeListener( 'data' );
-
-      };
-
-    },
-    []
-  );
-
-  function sendCommand ( command: Command ) {
-
-    conn.send( {
-      type: 'command',
-      data: command
-    } );
-    dispatchCommand( {
-      own: true,
-      move: command
-    } );
 
   }
-  return <gameLogicContext.Provider value={{
-    sendCommand,
-    status,
-    board,
-    loaded,
-    awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
-    playerPosition: playerPositionRef.current,
-    lastKnown
-  }}>
-    {children}
-  </gameLogicContext.Provider>;
+  function handlePeerCommand ( command:PeerAction['move'] ):boolean {
+
+    if ( command === null ) {
+
+      return true;
+
+    }
+    const { target: { x, y } } = command;
+    const hasHitPlayer = x === playerPositionRef.current?.x &&
+    y === playerPositionRef.current?.y;
+    if ( hasHitPlayer ) {
+      // handle hit
+    }
+    return false;
+
+  }
 
 }
