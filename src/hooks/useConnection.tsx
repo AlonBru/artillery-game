@@ -1,11 +1,13 @@
-import { createContext, useContext } from 'react';
+import { createContext, ReactNode, useContext } from 'react';
 import { DataConnection } from 'peerjs';
+import { usePeer } from './usePeer';
+import { ConnectionPage } from '../components/ConnectionPage';
 
 interface Connection extends DataConnection{
   send( message:GameMessage ):void
 }
 
-export const connectionContext = createContext<Connection|null>( null );
+const connectionContext = createContext<Connection|null>( null );
 
 export function useConnectionContext () {
 
@@ -16,5 +18,27 @@ export function useConnectionContext () {
 
   }
   return context;
+
+}
+
+export function ConnectionProvider ( { children }: {children:ReactNode|ReactNode[]} ) {
+
+  const {
+    connection,
+    id,
+    connect
+  } = usePeer( { onOpen: console.log } );
+  if ( !connection ) {
+
+    return <ConnectionPage
+      id={id}
+      connect={connect}
+    />;
+
+  }
+
+  return <connectionContext.Provider value={connection} >
+    {children}
+  </connectionContext.Provider>;
 
 }

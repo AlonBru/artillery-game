@@ -1,13 +1,13 @@
-import { ConnectionPage } from './ConnectionPage';
+import { ConnectionProvider } from '../hooks/useConnection';
 import { GameUI } from './GameUI';
 import { GameLogicProvider } from '../hooks/useGameManager';
 
 export function Game () {
 
-  return <ConnectionPage>
+  return <ConnectionProvider>
     <GameLogicProvider>
       <GameUI />
     </GameLogicProvider>
-  </ConnectionPage>;
+  </ConnectionProvider>;
 
 }

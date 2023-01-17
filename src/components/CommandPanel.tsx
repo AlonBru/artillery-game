@@ -1,5 +1,8 @@
-import { Dispatch, DispatchWithoutAction, SetStateAction } from 'react';
+import {
+  Dispatch, DispatchWithoutAction, ReactNode, SetStateAction
+} from 'react';
 import styled from 'styled-components';
+import { useConnectionContext } from '../hooks/useConnection';
 import { useGameLogic } from '../hooks/useGameManager';
 
 const ModeButton = styled.button<{selected?:boolean}>`
@@ -18,6 +21,29 @@ type Props = {
   cursor:Vector2|null;
 };
 
+function CommandPanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
+
+  const peer = useConnectionContext();
+
+  return <div>
+    {children}
+    <footer>
+
+      <button
+        onClick={() => {
+
+          console.log( peer );
+          peer?.close();
+
+        }}
+      >
+      leave game
+      </button>
+    </footer>
+  </div>;
+
+}
+
 export function CommandPanel ( {
   commandMode,
   setCommandMode,
@@ -33,7 +59,7 @@ export function CommandPanel ( {
 
   if ( commandMode === 'INITIAL' ) {
 
-    return <div>
+    return <CommandPanelBase>
       please select position to place your unit <br/>
       <ModeButton
         onClick={dispatch}
@@ -42,7 +68,7 @@ export function CommandPanel ( {
       >
           ACCEPT
       </ModeButton>
-    </div>;
+    </CommandPanelBase>;
 
   }
   const commandInputValid = commandMode === 'RELOAD' || ( commandMode !== null && cursor !== null );
@@ -50,7 +76,7 @@ export function CommandPanel ( {
   awaitingPlayerInput &&
   commandInputValid;
 
-  return <div>
+  return <CommandPanelBase>
     <h2>
       Select you command
     </h2>
@@ -75,6 +101,6 @@ export function CommandPanel ( {
     >
           ACCEPT
     </ModeButton>
-  </div>;
+  </CommandPanelBase>;
 
 }
