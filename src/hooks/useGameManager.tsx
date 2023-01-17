@@ -11,7 +11,7 @@ import { useConnectionContext } from './useConnection';
 import { useLastKnownPosition } from './useLastKnownPosition';
 
 
-type GameStatus = 'IDLE' | 'RECEIVED' | 'SENT' | 'WORKING';
+type GameStatus = 'IDLE' | 'RECEIVED' | 'SENT' | 'WORKING' | 'VICTORY' | 'DEFEAT';
 
 type GameLogic = {
   sendCommand( move:Command ):void;
@@ -31,8 +31,12 @@ type PeerAction = {
   own: false;
   move:FireCommand|null;
 };
+type EndGameAction = {
+  own: false;
+  move: 'defeat';
+};
 
-type Action = PlayerAction|PeerAction;
+type Action = PlayerAction|PeerAction|EndGameAction;
 
 const gameLogicContext = createContext<GameLogic|null>( null );
 
@@ -110,6 +114,17 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
   const [ { status }, dispatchGameAction ] = useReducer<Reducer<{ status: GameStatus; moves: Partial<Moves>| null; }, Action>>(
     ( { status: state, moves }, action ) => {
 
+      if ( action.move === 'defeat' ) {
+
+        return {
+          status: action.own
+            ? 'DEFEAT'
+            : 'VICTORY',
+          moves: null
+        };
+
+      }
+
       const newStatus = action.own
         ? handleOwnMove( state )
         : handlePeerMove( state );
@@ -136,7 +151,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       }
 
       const handledPlayerCommandUI = handlePlayerCommand( newMoves.player as PlayerAction['move'] );
-      const handledPeerCommandUI = handlePeerCommand( newMoves.peer as PeerAction['move'] );
+      const { uiHandled: handledPeerCommandUI, hit } = handlePeerCommand( newMoves.peer as PeerAction['move'] );
       const commands:UICommand[] = [];
       if ( !handledPlayerCommandUI ) {
 
@@ -149,6 +164,17 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
       }
       dispatchBoard( commands );
+
+      if ( hit ) {
+
+        conn.send( {
+          type: 'hit'
+        } );
+        return { status: 'DEFEAT',
+          moves: null };
+
+      }
+
       return {
         status: 'IDLE',
         moves: null
@@ -167,6 +193,12 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
         switch ( message.type ) {
 
+          case 'hit':
+            dispatchGameAction( {
+              own: false,
+              move: 'defeat'
+            } );
+            break;
           case 'command':
             dispatchGameAction( {
               own: false,
@@ -278,20 +310,19 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     }
 
   }
-  function handlePeerCommand ( command:PeerAction['move'] ):boolean {
+  function handlePeerCommand ( command:PeerAction['move'] ):{hit:boolean, uiHandled:boolean} {
 
     if ( command === null ) {
 
-      return true;
+      return { hit: false,
+        uiHandled: true };
 
     }
     const { target: { x, y } } = command;
     const hasHitPlayer = x === playerPositionRef.current?.x &&
     y === playerPositionRef.current?.y;
-    if ( hasHitPlayer ) {
-      // handle hit
-    }
-    return false;
+    return { hit: hasHitPlayer,
+      uiHandled: false };
 
   }
 

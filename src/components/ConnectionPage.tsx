@@ -25,7 +25,7 @@ export function ConnectionPage ( { children }: Pick<ComponentPropsWithoutRef<'di
         }}>
         {id}
       </button>. <br/>
-    send it to a friend or type in their id to connect. <br/>
+      send it to a friend or type in their id to connect. <br/>
       <input
         value={peerId}
         onChange={( { target: { value } } ) => setId( value )}

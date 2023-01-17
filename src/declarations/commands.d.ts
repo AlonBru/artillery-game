@@ -1,6 +1,7 @@
 
 type Item = 'PLAYER'|'CRATER'|null
 type Board = Array<Item[]>
+
 type MoveCommand = {
   type: 'MOVE';
   target: Vector2;

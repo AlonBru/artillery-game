@@ -4,7 +4,6 @@ type PositionMessage = {
 }
 type HitMessage = {
   type:'hit'
-  data:boolean;
 }
 
 /**
