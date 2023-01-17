@@ -74,7 +74,7 @@ export function GameUI () {
 
   return (
     <div>
-      <span> {status}</span>
+      {import.meta.env.DEV && <span> {status}</span>}
       <Root
         waitingForPeer={!awaitingPlayerInput}
         onContextMenu={( e ) => {

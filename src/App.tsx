@@ -4,7 +4,7 @@ function App () {
 
   return <div>
     <Game/>
-    <Game/>
+    {import.meta.env.DEV && <Game/>}
   </div>;
 
 }
