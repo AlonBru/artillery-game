@@ -61,10 +61,9 @@ const ModeItem = styled.span<{ selected?: boolean; index: number; }>`
 `;
 const SelectorKnob = styled.div<{ mode: number; }>`
   margin :10px auto;
-  transform: rotate(calc( 
+  /* transform: rotate(calc( 
     -1 * var(--angle) +  ${( { mode } ) => mode} * var(--angle)
-  ));
-  transition: transform .2s cubic-bezier(1,0,.01,.99) ;
+  )); */
   position: relative;
   width: 80px;
   height: 80px;
@@ -72,6 +71,7 @@ const SelectorKnob = styled.div<{ mode: number; }>`
   background: black;
   border: dotted #ababab 2px; 
   cursor: pointer;
+  filter: drop-shadow(#222 7px 7px 2px);
   /* notch */
   ::after{
     content: "";
@@ -82,9 +82,13 @@ const SelectorKnob = styled.div<{ mode: number; }>`
     left: 50%;
     width: 8px;
     height: 8px;
-    background: white;
-    transform: translateX(-50%) rotate(140deg);
-    border: 2px inset #6c6c6c;
+    background: #eaeaea;
+    transform-origin: 50% calc( 50% + 28px);
+    transform: translateX(-50%) rotate(calc(
+      ( var(--angle) - 5deg ) * ( ${( { mode } ) => mode} - 1)
+    ));
+    transition: transform .2s cubic-bezier(1,0,.01,.99) ;
+    border: 1px inset #141313;
 
   }
 `;
