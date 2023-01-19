@@ -72,11 +72,16 @@ const ButtonContainer = styled.div`
   border-radius: 50%;
   padding: 6px;
   background: var(--color);
+  margin-top: 10px;
 `;
 const RoundButton = styled.button<{active?:boolean, clicked?:boolean}>`
   --color: ${( { active } ) => ( active
     ? '#f23333ff'
     : '#b7262644'
+  )};
+  --shadow-color: ${( { active } ) => ( active
+    ? '#863b3b99'
+    : '#35353599'
   )};
   background: var(--color);
   border: solid 10px #5f1515;
@@ -87,8 +92,8 @@ const RoundButton = styled.button<{active?:boolean, clicked?:boolean}>`
   position: relative;
   transition:  all .2s;
   filter:${( { clicked } ) => ( clicked
-    ? 'drop-shadow(#333333db 0px 0px 2px)'
-    : 'drop-shadow(#333333db 7px 7px 2px)'
+    ? 'drop-shadow(var(--shadow-color) 0px 0px 2px)'
+    : 'drop-shadow(var(--shadow-color) 7px 7px 2px)'
   )};
   transform:${( { clicked } ) => ( clicked
     ? 'scale(.95);'
