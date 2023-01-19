@@ -8,7 +8,7 @@ import { useGameLogic } from '../hooks/useGameManager';
 
 const Root = styled.section<{waitingForPeer:boolean}>`
   display: grid;
-  grid-template-columns: max(400px, 50%) 50%;
+  grid-template-columns: max(400px, 50%) auto;
   background: #333;
   grid-column-gap: 20px;
   padding:10px;
@@ -71,7 +71,6 @@ export function GameUI () {
     } );
 
   }
-
   return (
     <div>
       {import.meta.env.DEV && <span> {status}</span>}
