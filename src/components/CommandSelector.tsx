@@ -59,7 +59,7 @@ const ModeItem = styled.span<{ selected?: boolean; index: number; }>`
     transform-origin: bottom;
   }
 `;
-const SelectorKnob = styled.div<{ mode: number; }>`
+const SelectorKnob = styled.button<{ mode: number; }>`
   margin :10px auto;
   /* transform: rotate(calc( 
     -1 * var(--angle) +  ${( { mode } ) => mode} * var(--angle)
@@ -94,7 +94,7 @@ const SelectorKnob = styled.div<{ mode: number; }>`
 `;
 export function CommandSelector ( { commandMode, setCommandMode }: {
   commandMode: CommandMode;
-  setCommandMode: Dispatch<SetStateAction<CommandMode>>;
+  setCommandMode: Dispatch<SetStateAction<CommandMode>>|undefined;
 } ) {
 
   const { loaded } = useGameLogic();
@@ -108,7 +108,7 @@ export function CommandSelector ( { commandMode, setCommandMode }: {
     : 'RELOAD';
   function setCommand () {
 
-    setCommandMode( ( mode ) => ( mode === 'MOVE'
+    setCommandMode?.( ( mode ) => ( mode === 'MOVE'
       ? fireMode
       : 'MOVE' ) );
 
@@ -126,6 +126,7 @@ export function CommandSelector ( { commandMode, setCommandMode }: {
     <SelectorKnob
       mode={modes.indexOf( commandMode )}
       onClick={setCommand}
+      disabled={!setCommandMode}
     >
 
     </SelectorKnob>

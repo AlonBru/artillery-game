@@ -115,7 +115,7 @@ const RoundButton = styled.button<{active?:boolean, clicked?:boolean}>`
   }
 `;
 
-const CommandLine = styled.span`
+const CommandLineCursor = styled.span`
   animation-name: cmd-blink;
   animation-duration: .8s ;
   animation-iteration-count: infinite;
@@ -209,18 +209,21 @@ export function CommandPanel ( {
     awaitingPlayerInput,
   } = useGameLogic();
 
-
+  const coords = `[${cursor?.x || '?'},${cursor?.y || '?'}]`;
   if ( commandMode === 'INITIAL' ) {
 
 
     return <PanelBase>
       <CommunticationDisplay>
         Where should we deploy general? <br/>
-        <CommandLine>
-          {'> '}
-        </CommandLine>
-          Deploy to [{cursor?.x},{cursor?.y}]
+        <CmdLine>
+          Deploy to {coords}
+        </CmdLine>
       </CommunticationDisplay>
+      <CommandSelector
+        commandMode={commandMode}
+        setCommandMode={undefined}
+      />
       <AcceptButton
         onClick={dispatch}
         canAct={awaitingPlayerInput && !!cursor}
@@ -249,15 +252,14 @@ export function CommandPanel ( {
       </ul>
       What is your command general?
       <br/>
-      {'> '}
-      <CommandLine>
+      <CmdLine>
         {requiresCoord
 
           ? `${commandMode} ${commandMode === 'MOVE'
             ? 'to'
-            : 'on'} coordinate [${cursor?.x || '?'},${cursor?.y || '?'}]`
+            : 'on'} coordinate ${coords}`
           : commandMode}
-      </CommandLine>
+      </CmdLine>
     </CommunticationDisplay>
     <CommandSelector
       commandMode={commandMode}
@@ -265,7 +267,6 @@ export function CommandPanel ( {
     />
 
     <AcceptButton
-
       canAct={canAct}
       onClick={dispatch}
     />
@@ -274,17 +275,32 @@ export function CommandPanel ( {
 }
 
 
+function CmdLine ( { children }:{children:ReactNode|ReactNode[]} ) {
+
+  return <span>
+    <CommandLineCursor>
+      {'> '}
+    </CommandLineCursor>
+    {children}
+  </span>;
+
+}
+
 function AcceptButton ( { canAct, onClick }:{onClick: DispatchWithoutAction, canAct: boolean} ) {
 
   const [ clicked, setClicked ] = useState( false );
   return <div
     style={{
-      margin: 'auto',
-      width: 'fit-content'
+      margin: '10px auto',
+      width: 'fit-content',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      color: '#eee'
     }}
   >
 
-    ACCEPT
+    COMMAND
     <ButtonContainer>
       <RoundButton
         onClick={onClick}
