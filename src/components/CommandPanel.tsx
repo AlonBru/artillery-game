@@ -51,14 +51,15 @@ const CommunticationDisplay = styled.div`
   background: #003800;
   color: #3bc880;
   font-family: greenScreen;
-  padding: 10px;
+  padding: 14px;
   border-radius: 10px;
   border: 5px inset #666;
   white-space: pre-wrap;
   text-transform: uppercase;
   text-shadow: #3bc880c7 0px 0 5px;
   font-weight: bold;
-  `;
+  box-shadow: #0be10b6e 0 0 20px inset;
+`;
 
 const Footer = styled.footer`
   height: 50px;
