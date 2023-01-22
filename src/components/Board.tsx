@@ -93,18 +93,67 @@ const Crater = styled.div`
   background: black;
   border-radius: 50%;
 `;
-const Marker = styled.div`
+const Marker = styled.div<{position:Vector2}>`
   margin: auto;
   text-align: center;
-  color: darkred;
+  border: ${( { theme } ) => theme.screen.text.color} 3px solid;
   font-family: serif;
-  font-size: 2rem;
   position: absolute;
-  width: 100%;
-  top:50%;
+  width: 20px;
+  height: 20px;
+  /* top:50%;
+  left:50%; */
   pointer-events: none;
-  transform: translateY(-50%);
+  /* transform: translate(${( { position: { x, y } } ) => `
+  calc( ${25 + x * 50}px - 50% ),
+  calc( ${25 + y * 50}px - 50% )
+  `}); */
+  translate:${( { position: { x, y } } ) => `
+  calc( ${25 + x * 50}px - 50% ) calc( ${25 + y * 50}px - 50% )
+  `};
+  border-radius: 50%;
+  transition: translate .2s;
+  
+  /* horizontal */
+  ::before{
+    content: "";
+    display: block;
+    position: relative;
+    width: 180%;
+    left: -40%;
+    top: 50%;
+    height: 3px;
+    background: linear-gradient(to right, ${( { theme } ) => theme.screen.text.color} 33%,transparent  33%, transparent 66%, ${( { theme } ) => theme.screen.text.color} 66%);
+    transform: translateY(-50%);
+  }
+
+  /* vertical */
+  ::after{
+    content: "";
+    display: block;
+    position: relative;
+    height: 180%;
+    left: 50%;
+    top: -50%;
+    width: 3px;
+    background:
+    linear-gradient(${( { theme } ) => theme.screen.text.color} 33%,transparent  33%, transparent 66%, ${( { theme } ) => theme.screen.text.color} 66%);
+    transform: translateX(-50%);
+  }
+  /* transform-origin: 50% 50%; */
+  animation: target-animate 1s  alternate infinite ease-in-out;
+  @keyframes target-animate {
+    from{
+      transform: scale(1) ;
+      opacity: 1;
+    }
+    to{
+      transform: scale(.9) ;
+      opacity: .8;
+    }
+  } 
 `;
+
 const LastKnownPosition = styled.div`
   width: 0;
   height: 0;
@@ -139,7 +188,6 @@ export function Board ( {
       {board.map( ( column, x ) => <BoardColumn key={x}>
         {column.map( ( item, y ) => {
 
-          const marked = x === cursor?.x && y === cursor?.y;
           const isLastKnown = x === lastKnown?.x && y === lastKnown.y;
           const cratered = ( [ 'CRATER',
             'DESTROYED' ] as Item[] ).includes( item );
@@ -158,7 +206,6 @@ export function Board ( {
 
             }}>
             <>
-              { marked && <Marker>X</Marker>}
               {item === 'PLAYER' && <Player />}
               {cratered && <Crater />}
               {item === 'DESTROYED' && <Wreck />}
@@ -169,7 +216,11 @@ export function Board ( {
         } )}
       </BoardColumn> )}
 
+      { cursor !== null && <Marker position={cursor}/>}
     </BoardRoot>
+
+    {/* {cursor !== null && <HLine y={cursor.y}/>}
+    {cursor !== null && <VLine x={cursor.x}/>} */}
   </Screen>;
 
 }
