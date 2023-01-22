@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useConnectionContext } from '../hooks/useConnection';
 import { useGameLogic } from '../hooks/useGameManager';
 import { CommandSelector } from './CommandSelector';
+import { GreenScreenDisplay } from './styled';
 
 
 const BasePanel = styled.aside`
@@ -43,21 +44,8 @@ const Screw = styled.div<{rotate:number}>`
 const Main = styled.main`
 `;
 
-const CommunticationDisplay = styled.div`
-  @font-face {
-    font-family: greenScreen;
-    src: url(Greenscr.ttf);
-  }
-  background: #003800;
-  color: #3bc880;
-  font-family: greenScreen;
+const CommunticationDisplay = styled( GreenScreenDisplay )`
   padding: 14px;
-  border-radius: 10px;
-  border: 5px inset #666;
-  white-space: pre-wrap;
-  text-transform: uppercase;
-  text-shadow: #3bc880c7 0px 0 5px;
-  font-weight: bold;
   box-shadow: #0be10b6e 0 0 20px inset;
 `;
 

@@ -2,7 +2,19 @@ import { SetStateAction, Dispatch } from 'react';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
 import { BoardCell } from './BoardCell';
-import { BoardColumn } from './styled';
+import { BoardColumn, GreenScreenDisplay } from './styled';
+
+const Screen = styled( GreenScreenDisplay )`
+  padding:30px;
+  width: fit-content;
+  height: auto;
+  aspect-ratio: 1/1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto; 
+
+`;
 
 const BoardRoot = styled.main`
   margin: auto;
@@ -11,7 +23,9 @@ const BoardRoot = styled.main`
   display: grid;
   grid-template-columns: repeat(8,1fr);
   grid-column-gap: 2px;
-  background: darkred;
+  background: #3bc880;
+  padding: 3px;
+  box-shadow: #3bc880c7 0px 0 5px;
 `;
 const Player = styled.div`
   width: 66%;
@@ -120,39 +134,42 @@ export function Board ( {
 }: BoardProps ) {
 
   const { lastKnown } = useGameLogic();
-  return <BoardRoot>
-    {board.map( ( column, x ) => <BoardColumn key={x}>
-      {column.map( ( item, y ) => {
+  return <Screen>
+    <BoardRoot>
+      {board.map( ( column, x ) => <BoardColumn key={x}>
+        {column.map( ( item, y ) => {
 
-        const marked = x === cursor?.x && y === cursor?.y;
-        const isLastKnown = x === lastKnown?.x && y === lastKnown.y;
-        const cratered = ( [ 'CRATER',
-          'DESTROYED' ] as Item[] ).includes( item );
-        return <BoardCell
-          commandMode={commandMode}
-          playerPosition={playerPosition}
-          x={x}
-          y={y}
-          key={`${x}+${y}`}
-          onClick={() => {
+          const marked = x === cursor?.x && y === cursor?.y;
+          const isLastKnown = x === lastKnown?.x && y === lastKnown.y;
+          const cratered = ( [ 'CRATER',
+            'DESTROYED' ] as Item[] ).includes( item );
+          return <BoardCell
+            commandMode={commandMode}
+            playerPosition={playerPosition}
+            x={x}
+            y={y}
+            key={`${x}+${y}`}
+            onClick={() => {
 
-            setCursor( {
-              x,
-              y
-            } );
+              setCursor( {
+                x,
+                y
+              } );
 
-          }}>
-          <>
-            { marked && <Marker>X</Marker>}
-            {item === 'PLAYER' && <Player />}
-            {cratered && <Crater />}
-            {item === 'DESTROYED' && <Wreck />}
-            {isLastKnown && <LastKnownPosition/>}
-          </>
-        </BoardCell>;
+            }}>
+            <>
+              { marked && <Marker>X</Marker>}
+              {item === 'PLAYER' && <Player />}
+              {cratered && <Crater />}
+              {item === 'DESTROYED' && <Wreck />}
+              {isLastKnown && <LastKnownPosition/>}
+            </>
+          </BoardCell>;
 
-      } )}
-    </BoardColumn> )}
-  </BoardRoot>;
+        } )}
+      </BoardColumn> )}
+
+    </BoardRoot>
+  </Screen>;
 
 }

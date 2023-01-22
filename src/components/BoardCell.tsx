@@ -9,22 +9,13 @@ const BoardCellRoot = styled.button`
   display: block;
   width: 100%;
   height: 100%;
-  background: navy;
+  background: #003800;
   position: relative;
+  box-shadow: #3bc880c7 0px 0 5px inset;
   :not(:disabled):hover{
-    outline: yellow solid 1px;
+    box-shadow: #3bc880c7 0px 0 15px inset;
+    /* outline: yellow solid 1px; */
   }
-  :nth-child(2n){
-    background-color: skyblue;
-  }
-  ${BoardColumn}:nth-child(2n) & {
-    background: skyblue;
-    :nth-child(2n){
-      background: navy;
-    }
-
-  }
-  
   
 `;
 export function BoardCell ( {
