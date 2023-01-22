@@ -27,14 +27,14 @@ const Screw = styled.div<{rotate:number}>`
   height: 8px;
   width: 8px;
   position: absolute;
-  background: #6b6033;
+  background: ${( { theme } ) => theme.screw.backgroundColor};
   overflow: hidden;
-  border: #464646 inset 2px;
+  border: ${( { theme } ) => theme.screw.borderColor} inset 2px;
   ::after{
     content: "";
     height: 100%;
     width: 2px;
-    background: #333;
+    background: ${( { theme } ) => theme.screw.slitColor};
     position: absolute;
     left: 50%;
     transform: translateX(-50%) rotate(${( { rotate } ) => rotate}deg);

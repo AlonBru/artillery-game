@@ -12,16 +12,16 @@ export const GreenScreenDisplay = styled.div`
     font-family: greenScreen;
     src: url(Greenscr.ttf);
   }
-  background: #003800;
-  color: #3bc880;
+  background: ${( { theme } ) => theme.screen.backgroundColor};
+  color: ${( { theme } ) => theme.screen.text.color};
   font-family: greenScreen;
   border-radius: 10px;
   border: 5px inset #666;
   white-space: pre-wrap;
   text-transform: uppercase;
-  text-shadow: #3bc880c7 0px 0 5px;
+  text-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
   font-weight: bold;
-  box-shadow: #0be10b6e 0 0 20px inset;
+  box-shadow: ${( { theme } ) => theme.screen.glowColor} 0 0 20px inset;
   position: relative;
   
   ::after{

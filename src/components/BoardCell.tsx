@@ -2,18 +2,17 @@ import { ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
 import { BOARD_SIZE, PLAYER_MOVEMENT } from '../constants';
 import { useGameLogic } from '../hooks/useGameManager';
-import { BoardColumn } from './styled';
 
 const BoardCellRoot = styled.button`
   all: unset;
   display: block;
   width: 100%;
   height: 100%;
-  background: #003800;
+  background: ${( { theme } ) => theme.screen.backgroundColor};
   position: relative;
-  box-shadow: #3bc880c7 0px 0 5px inset;
+  box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 5px inset;
   :not(:disabled):hover{
-    box-shadow: #3bc880c7 0px 0 15px inset;
+    box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 15px inset;
     /* outline: yellow solid 1px; */
   }
   

@@ -23,9 +23,9 @@ const BoardRoot = styled.main`
   display: grid;
   grid-template-columns: repeat(8,1fr);
   grid-column-gap: 2px;
-  background: #3bc880;
+  background: ${( { theme } ) => theme.screen.text.color};
   padding: 3px;
-  box-shadow: #3bc880c7 0px 0 5px;
+  box-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
 `;
 const Player = styled.div`
   width: 66%;
