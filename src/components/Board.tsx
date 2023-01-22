@@ -93,7 +93,7 @@ const Crater = styled.div`
   background: black;
   border-radius: 50%;
 `;
-const Marker = styled.div<{position:Vector2}>`
+const Reticule = styled.div<{position:Vector2}>`
   margin: auto;
   text-align: center;
   border: ${( { theme } ) => theme.screen.text.color} 3px solid;
@@ -216,7 +216,7 @@ export function Board ( {
         } )}
       </BoardColumn> )}
 
-      { cursor !== null && <Marker position={cursor}/>}
+      { cursor !== null && <Reticule position={cursor}/>}
     </BoardRoot>
 
     {/* {cursor !== null && <HLine y={cursor.y}/>}
