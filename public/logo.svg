@@ -1,0 +1,25 @@
+<svg width="68.036mm" height="68.036mm" version="1.1" viewBox="0 0 68.036 68.036" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g transform="translate(-67.28 -61.988)">
+  <circle cx="101.3" cy="96.006" r="34.018" style="fill:#4d4d4d"/>
+  <circle cx="101.3" cy="96.006" r="20.98" style="fill:none;stroke-dashoffset:37.795;stroke-linecap:round;stroke-linejoin:round;stroke-width:3;stroke:#0f0"/>
+  <path d="m101.3 96.006v-28.726" style="fill:none;stroke-width:3;stroke:#0f0"/>
+  <path d="m101.3 124.73v-28.726" style="fill:none;stroke-width:3;stroke:#0f0"/>
+  <path d="m101.3 96.006h28.726" style="fill:none;stroke-width:3;stroke:#0f0"/>
+  <path d="m72.571 96.006h28.726" style="fill:none;stroke-width:3;stroke:#0f0"/>
+  <circle cx="101.3" cy="96.006" r="12.946" style="fill:#4d4d4d"/>
+  <path d="m101.3 96.006 8.9405-8.9405" style="fill:none;stroke-width:2.2808;stroke:#0f0"/>
+  <path d="m92.357 104.95 8.9405-8.9405" style="fill:none;stroke-width:2.2808;stroke:#0f0"/>
+  <path d="m101.3 96.006-8.9405-8.9405" style="fill:none;stroke-width:2.2808;stroke:#0f0"/>
+  <path d="m110.24 104.95-8.9405-8.9405" style="fill:none;stroke-width:2.2808;stroke:#0f0"/>
+  <circle cx="101.3" cy="96.006" r="5.5958" style="fill:#4d4d4d"/>
+ </g>
+</svg>
