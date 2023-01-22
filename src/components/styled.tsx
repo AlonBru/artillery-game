@@ -26,6 +26,7 @@ export const GreenScreenDisplay = styled.div`
   
   ::after{
     content: "";
+    pointer-events: none;
     --maskSize: 8px;
     position: absolute;
     left: 0;
