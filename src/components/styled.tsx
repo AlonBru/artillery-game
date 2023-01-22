@@ -23,4 +23,31 @@ export const GreenScreenDisplay = styled.div`
   font-weight: bold;
   box-shadow: #0be10b6e 0 0 20px inset;
   position: relative;
+  
+  ::after{
+    content: "";
+    --maskSize: 8px;
+    position: absolute;
+    left: 0;
+    top:0;
+    width: 100%;
+    height: 100%;
+    background: #0004;
+    mask-image: linear-gradient( transparent 50%, black 100% );
+    mask-size: 10px var(--maskSize);
+
+    animation-name: scanlines;
+    animation-duration: 1.8s;
+    animation-direction: reverse;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+  @keyframes scanlines{
+    from{
+      mask-position-y: 0;
+    }
+    to{
+      mask-position-y: var(--maskSize);
+    }
+  }
 `;
