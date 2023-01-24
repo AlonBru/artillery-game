@@ -26,16 +26,21 @@ export function ConnectionProvider ( { children }: {children:ReactNode|ReactNode
   const {
     connection,
     id,
-    connect
+    connect,
+    error,
+    loading
   } = usePeer( { onOpen: console.log } );
 
+  const gameReady = connection !== null && !error;
   return <>
     <ConnectionPage
       id={id}
       connect={connect}
       connected={!!connection}
+      disconnectReason={error}
+      loading={loading}
     />
-    {connection !== null && <connectionContext.Provider value={connection} >
+    {gameReady && <connectionContext.Provider value={connection} >
       {children}
     </connectionContext.Provider>
     }

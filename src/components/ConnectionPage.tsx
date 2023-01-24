@@ -44,9 +44,17 @@ const Root = styled( 'div' )<{connected:boolean}>`
   }
 `;
 
-export function ConnectionPage ( { connect, id, connected }:{
-  id: string | undefined, connect: ( peerId: string ) =>void,
+export function ConnectionPage ( {
+  connect,
+  id,
+  connected,
+  loading,
+  disconnectReason
+}:{
+  id: string | undefined, connect: ( peerId: string ) =>void;
   connected:boolean
+  loading:boolean
+  disconnectReason:string|undefined;
 } ) {
 
   const [ peerId, setId ] = useState( '' );
@@ -72,14 +80,13 @@ export function ConnectionPage ( { connect, id, connected }:{
       </button>.
     </span>
     <br />
-
-    send it to a friend or type in their id to connect: <br />
+    Send it to a friend or type in their id to connect: <br />
     <input
       value={peerId}
       onChange={( { target: { value } } ) => setId( value )} />
 
     <button
-      disabled={!peerId || connected}
+      disabled={!peerId || connected || loading}
 
       onClick={() => {
 
@@ -87,8 +94,13 @@ export function ConnectionPage ( { connect, id, connected }:{
 
       } }
     >
-      CONNECT
+      {loading
+        ? 'loading'
+        : 'CONNECT' }
     </button>
+    {!loading && disconnectReason && <span>
+      Disconnected due to: {disconnectReason}
+    </span>}
   </Root>;
 
 }
