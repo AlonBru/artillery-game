@@ -47,6 +47,9 @@ const Main = styled.main`
 const CommunticationDisplay = styled( GreenScreenDisplay )`
   padding: 14px;
   height: 170px;
+  max-width: 400px;
+  position: relative;
+  overflow: hidden;
 `;
 const EndGameHeader = styled.p`
   font-size: 50px;
@@ -59,6 +62,29 @@ const EndGameText = styled.div`
   text-align: center;
   
 `;
+const WaitingLine = styled.span`
+  // for the ellipsis to cause a newline
+  padding-inline-end: 30px;
+  ::after{
+    content: ".";
+    animation-name: waiting;
+    animation-duration: .5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    position: absolute;
+  }
+  @keyframes waiting{
+    
+    30% {
+      content:"..";
+    }
+    60% {
+      content:"...";
+    }
+  }
+
+`;
+
 
 const Footer = styled.footer`
   height: 50px;
@@ -215,10 +241,18 @@ export function CommandPanel ( {
 
     return <PanelBase>
       <CommunticationDisplay>
-        Where should we deploy general? <br/>
+        { awaitingPlayerInput && <>
+          Where should we deploy general? <br/>
+        </>}
         <CmdLine>
           Deploy to {coords}
         </CmdLine>
+        <br/>
+        <br/>
+        {!awaitingPlayerInput &&
+          <WaitingLine>
+            awainting an update from the field
+          </WaitingLine>}
       </CommunticationDisplay>
       <CommandSelector
         commandMode={commandMode}
@@ -262,8 +296,10 @@ export function CommandPanel ( {
             </li>
 
           </ul>
-      What is your command general?
-          <br/>
+          {awaitingPlayerInput && <>
+            What is your command general?
+            <br/>
+          </>}
           <CmdLine>
             {requiresCoord
 
@@ -272,6 +308,14 @@ export function CommandPanel ( {
                 : 'on'} coordinate ${coords}`
               : commandMode}
           </CmdLine>
+          <br/>
+          <br/>
+          {!awaitingPlayerInput &&
+          <WaitingLine>
+            awainting an update from the field
+          </WaitingLine>
+
+          }
         </>
       }
     </CommunticationDisplay>
