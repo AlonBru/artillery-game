@@ -61,17 +61,17 @@ const ModeItem = styled.span<{ selected?: boolean; index: number; }>`
 `;
 const SelectorKnob = styled.button<{ mode: number; }>`
   margin :10px auto;
-  /* transform: rotate(calc( 
-    -1 * var(--angle) +  ${( { mode } ) => mode} * var(--angle)
-  )); */
   position: relative;
   width: 80px;
   height: 80px;
   border-radius: 50%;
   background: black;
   border: dotted #ababab 2px; 
-  cursor: pointer;
   filter: drop-shadow(#222 7px 7px 2px);
+  &:not(:disabled){
+    cursor: pointer;
+
+  }
   /* notch */
   ::after{
     content: "";
@@ -91,8 +91,10 @@ const SelectorKnob = styled.button<{ mode: number; }>`
     border: 1px inset #141313;
 
   }
+  
 `;
-export function CommandSelector ( { commandMode, setCommandMode }: {
+export function CommandSelector ( { commandMode, setCommandMode, disabled }: {
+  disabled?:boolean;
   commandMode: CommandMode;
   setCommandMode: Dispatch<SetStateAction<CommandMode>>|undefined;
 } ) {
@@ -126,7 +128,7 @@ export function CommandSelector ( { commandMode, setCommandMode }: {
     <SelectorKnob
       mode={modes.indexOf( commandMode )}
       onClick={setCommand}
-      disabled={!setCommandMode}
+      disabled={!setCommandMode || disabled}
     >
 
     </SelectorKnob>

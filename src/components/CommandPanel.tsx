@@ -223,6 +223,7 @@ export function CommandPanel ( {
       <CommandSelector
         commandMode={commandMode}
         setCommandMode={undefined}
+        disabled={!awaitingPlayerInput }
       />
       <AcceptButton
         onClick={dispatch}
@@ -277,8 +278,8 @@ export function CommandPanel ( {
     <CommandSelector
       commandMode={commandMode}
       setCommandMode={setCommandMode}
+      disabled={!awaitingPlayerInput }
     />
-
     <AcceptButton
       canAct={canAct}
       onClick={dispatch}
