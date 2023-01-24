@@ -28,17 +28,18 @@ export function ConnectionProvider ( { children }: {children:ReactNode|ReactNode
     id,
     connect
   } = usePeer( { onOpen: console.log } );
-  if ( !connection ) {
 
-    return <ConnectionPage
+  return <>
+    <ConnectionPage
       id={id}
       connect={connect}
-    />;
+      connected={!!connection}
+    />
+    {connection !== null && <connectionContext.Provider value={connection} >
+      {children}
+    </connectionContext.Provider>
+    }
+  </>;
 
-  }
-
-  return <connectionContext.Provider value={connection} >
-    {children}
-  </connectionContext.Provider>;
 
 }

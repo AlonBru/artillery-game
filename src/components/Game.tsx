@@ -4,10 +4,20 @@ import { GameLogicProvider } from '../hooks/useGameManager';
 
 export function Game () {
 
-  return <ConnectionProvider>
-    <GameLogicProvider>
-      <GameUI />
-    </GameLogicProvider>
-  </ConnectionProvider>;
+  return <div
+    className="GameRoot"
+    style={{
+      position: 'relative',
+      minHeight: 500,
+      margin: 'auto'
+
+    }}
+  >
+    <ConnectionProvider>
+      <GameLogicProvider>
+        <GameUI />
+      </GameLogicProvider>
+    </ConnectionProvider>
+  </div>;
 
 }
