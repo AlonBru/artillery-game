@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const Root = styled( 'div' )<{connected:boolean}>`
@@ -50,6 +50,14 @@ export function ConnectionPage ( { connect, id, connected }:{
 } ) {
 
   const [ peerId, setId ] = useState( '' );
+  useEffect(
+    () => {
+
+      setId( '' );
+
+    },
+    [ connected ]
+  );
   return <Root connected={connected} >
     <span>Your id is {' '}
       <button
@@ -71,7 +79,7 @@ export function ConnectionPage ( { connect, id, connected }:{
       onChange={( { target: { value } } ) => setId( value )} />
 
     <button
-      disabled={!peerId}
+      disabled={!peerId || connected}
 
       onClick={() => {
 

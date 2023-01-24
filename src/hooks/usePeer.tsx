@@ -1,5 +1,7 @@
 import { Peer, DataConnection } from 'peerjs';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useCallback, useEffect, useRef, useState
+} from 'react';
 
 
 export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
@@ -8,6 +10,42 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
   const [ id, setId ] = useState<string>( );
   const [ connection, setConnection ] = useState<DataConnection|null>( null );
   const [ error, setError ] = useState<string>( );
+  const handleConnectionClosed = useCallback(
+    ( ) => {
+
+      alert( 'your peer has left' );
+      setConnection( null );
+
+    },
+    []
+  );
+  const handleConnection = useCallback(
+    ( conn:DataConnection ) => {
+
+      conn.on(
+        'close',
+        handleConnectionClosed
+      );
+      conn.addListener(
+        'error',
+        ( error ) => {
+
+          console.error( error );
+          setError( ( error as any ).type );
+
+        }
+      );
+      if ( !connection ) {
+
+        return setConnection( conn );
+
+      }
+      conn.close();
+
+    },
+    [ connection,
+      handleConnectionClosed ]
+  );
   useEffect(
     () => {
 
@@ -42,10 +80,6 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         'connection',
         handleConnection
       );
-      connection?.on(
-        'close',
-        handleConnectionClosed
-      );
       return () => {
 
         peer.removeListener(
@@ -68,21 +102,6 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         onOpen( peerId );
 
       }
-      function handleConnection ( conn:DataConnection ) {
-
-        if ( !connection ) {
-
-          return setConnection( conn );
-
-        }
-        conn.close();
-
-      }
-      function handleConnectionClosed ( ) {
-
-        setConnection( null );
-
-      }
 
     },
     [ connection,
@@ -99,13 +118,10 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         metadata: { userName: 'danny' }
       }
     );
-    setConnection( conn );
-    conn.addListener(
-      'error',
-      ( error ) => setError( ( error as any ).type )
-    );
+    handleConnection( conn );
 
   }
+
   return {
     id,
     connection,
