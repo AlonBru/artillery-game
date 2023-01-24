@@ -1,9 +1,10 @@
 type PositionMessage = {
-  type:'position'
+  type:'position';
   data: Vector2;
 }
 type HitMessage = {
-  type:'hit'
+  type:'hit';
+  data:Vector2;
 }
 
 /**

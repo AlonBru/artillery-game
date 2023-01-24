@@ -11,8 +11,6 @@ import { useConnectionContext } from './useConnection';
 import { useLastKnownPosition } from './useLastKnownPosition';
 
 
-type GameStatus = 'IDLE' | 'RECEIVED' | 'SENT' | 'WORKING' | 'VICTORY' | 'DEFEAT';
-
 type GameLogic = {
   sendCommand( move:Command ):void;
   status: GameStatus;
@@ -21,6 +19,7 @@ type GameLogic = {
   awaitingPlayerInput:boolean;
   playerPosition: Vector2|null;
   lastKnown: Vector2|null;
+  endGame:false|EndGameStatus;
 };
 type PlayerAction = {
   own:true,
@@ -32,14 +31,30 @@ type PeerAction = {
   move:FireCommand|null;
 };
 type EndGameAction = {
-  own: false;
-  move: 'defeat';
+  own: boolean;
+  move: {
+    type: 'defeat',
+    target:Vector2
+  };
+
 };
 
 type Action = PlayerAction|PeerAction|EndGameAction;
 
 const gameLogicContext = createContext<GameLogic|null>( null );
+const endgameStates:Readonly<EndGameStatus[]> = [ 'DEFEAT',
+  'VICTORY' ];
 
+type MovesList = {
+  player: Command;
+  peer: Command|null;
+} ;
+type GameState = {
+  status: GameStatus;
+  moves: Partial<MovesList> | null;
+};
+
+type BoardChange = UICommand | EndGameAction['move'];
 export function useGameLogic ():GameLogic {
 
   const context = useContext( gameLogicContext );
@@ -61,13 +76,18 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
   const [ loaded, setLoaded ] = useState<boolean>( true );
   const lastKnown = useLastKnownPosition( );
 
-  const [ board, dispatchBoard ] = useReducer<Reducer<Board, UICommand[]>>(
+
+  const [ board, dispatchBoard ] = useReducer<Reducer<Board, BoardChange[]>>(
     ( boardState, actions ) => actions.reduce<Board>(
       ( board, command ) => {
 
         const { type, target: { x, y } } = command;
 
         switch ( type ) {
+
+          case 'defeat':
+            board[x][y] = 'DESTROYED';
+            break;
 
           case 'INITIAL':
 
@@ -107,29 +127,22 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     ),
     getFreshBoard( BOARD_SIZE )
   );
-  type Moves = {
-    player: Command;
-    peer: Command|null;
-  } ;
 
-  const [ { status }, dispatchGameAction ] = useReducer<Reducer<{ status: GameStatus; moves: Partial<Moves>| null; }, Action>>(
+
+  const [ { status }, dispatchGameAction ] = useReducer<Reducer<GameState, Action>>(
     ( { status: state, moves }, action ) => {
 
-      if ( action.move === 'defeat' ) {
+      if ( isEndGameAction( action ) ) {
 
-        return {
-          status: action.own
-            ? 'DEFEAT'
-            : 'VICTORY',
-          moves: null
-        };
+
+        return handleEndGame( action );
 
       }
 
       const newStatus = action.own
         ? handleOwnMove( state )
         : handlePeerMove( state );
-      const newMoves:Partial<Moves> = {
+      const newMoves:Partial<MovesList> = {
         ...moves
       };
       if ( action.own ) {
@@ -169,7 +182,8 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       if ( hit ) {
 
         conn.send( {
-          type: 'hit'
+          type: 'hit',
+          data: playerPositionRef.current as Vector2
         } );
         return { status: 'DEFEAT',
           moves: null };
@@ -197,7 +211,10 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
           case 'hit':
             dispatchGameAction( {
               own: false,
-              move: 'defeat'
+              move: {
+                type: 'defeat',
+                target: message.data
+              }
             } );
             break;
           case 'command':
@@ -230,6 +247,12 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     []
   );
 
+  function isEndGameAction ( action: Action ):action is EndGameAction {
+
+    return action.move?.type === 'defeat';
+
+  }
+
   function sendCommand ( command: Command ) {
 
 
@@ -246,6 +269,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     } );
 
   }
+
   return <gameLogicContext.Provider value={{
     sendCommand,
     status,
@@ -253,10 +277,17 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     loaded,
     awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
     playerPosition: playerPositionRef.current,
-    lastKnown
+    lastKnown,
+    endGame: isStatusEndgame( status ) && status
   }}>
     {children}
   </gameLogicContext.Provider>;
+  function isStatusEndgame ( status:GameStatus ): status is EndGameStatus {
+
+    return endgameStates.includes( status as EndGameStatus );
+
+  }
+
   function hasHitPlayer ( x: number, y: number ) {
 
     return x === playerPositionRef.current?.x &&
@@ -341,7 +372,13 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       y
     );
     const message:GameMessage = playerHit
-      ? { type: 'hit' }
+      ? {
+        type: 'hit',
+        data: {
+          x,
+          y
+        }
+      }
       : {
         type: 'position',
         data: playerPositionRef.current as Vector2
@@ -349,6 +386,21 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     conn.send( message );
     return { hit: playerHit,
       uiHandled: false };
+
+  }
+  function handleEndGame ( { move, own }:EndGameAction ):GameState {
+
+    if ( move.target ) {
+
+      dispatchBoard( [ move ] );
+
+    }
+    return {
+      status: own
+        ? 'DEFEAT'
+        : 'VICTORY',
+      moves: null
+    };
 
   }
 

@@ -46,7 +46,18 @@ const Main = styled.main`
 
 const CommunticationDisplay = styled( GreenScreenDisplay )`
   padding: 14px;
-  box-shadow: #0be10b6e 0 0 20px inset;
+  height: 170px;
+`;
+const EndGameHeader = styled.p`
+  font-size: 50px;
+  height: 50px;
+  text-align: center;
+  margin:20px 0;
+`;
+const EndGameText = styled.div`
+  font-size: 20px;
+  text-align: center;
+  
 `;
 
 const Footer = styled.footer`
@@ -195,6 +206,7 @@ export function CommandPanel ( {
   const {
     loaded,
     awaitingPlayerInput,
+    endGame
   } = useGameLogic();
 
   const coords = `[${cursor?.x || '?'},${cursor?.y || '?'}]`;
@@ -229,25 +241,38 @@ export function CommandPanel ( {
 
   return <PanelBase>
     <CommunticationDisplay>
+
+      {endGame
+        ? <>
+          <EndGameHeader>
+            {endGame}
+          </EndGameHeader>
+          <EndGameText>
+            {getEndgameText( endGame )}
+          </EndGameText>
+        </>
+        : <>
       STATUS:
-      <ul>
-        <li>
+          <ul>
+            <li>
         Shell:{loaded
-            ? 'READY'
-            : 'SPENT'}
-        </li>
+                ? 'READY'
+                : 'SPENT'}
+            </li>
 
-      </ul>
+          </ul>
       What is your command general?
-      <br/>
-      <CmdLine>
-        {requiresCoord
+          <br/>
+          <CmdLine>
+            {requiresCoord
 
-          ? `${commandMode} ${commandMode === 'MOVE'
-            ? 'to'
-            : 'on'} coordinate ${coords}`
-          : commandMode}
-      </CmdLine>
+              ? `${commandMode} ${commandMode === 'MOVE'
+                ? 'to'
+                : 'on'} coordinate ${coords}`
+              : commandMode}
+          </CmdLine>
+        </>
+      }
     </CommunticationDisplay>
     <CommandSelector
       commandMode={commandMode}
@@ -259,6 +284,13 @@ export function CommandPanel ( {
       onClick={dispatch}
     />
   </PanelBase>;
+  function getEndgameText ( endType:EndGameStatus ):string {
+
+    return endType === 'VICTORY'
+      ? 'We have struck down the enemy'
+      : 'our unit has been hit';
+
+  }
 
 }
 
