@@ -25,8 +25,7 @@ export function GameUI () {
     sendCommand: sendEvent,
     playerPosition,
     board,
-    awaitingPlayerInput,
-    endGame
+    awaitingPlayerInput
   } = useGameLogic();
   const [ cursor, setCursor ] = useState<Vector2 | null>( null );
   const [ commandMode, setCommandMode ] = useState<CommandMode>( 'INITIAL' );
