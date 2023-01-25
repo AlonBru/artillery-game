@@ -66,6 +66,8 @@ export function ConnectionPage ( {
     },
     [ connected ]
   );
+  const sameId = peerId === id;
+  const disabled = !peerId || connected || loading || sameId;
   return <Root connected={connected} >
     <span>Your id is {' '}
       <button
@@ -84,9 +86,8 @@ export function ConnectionPage ( {
     <input
       value={peerId}
       onChange={( { target: { value } } ) => setId( value )} />
-
     <button
-      disabled={!peerId || connected || loading}
+      disabled={disabled}
 
       onClick={() => {
 
@@ -98,6 +99,8 @@ export function ConnectionPage ( {
         ? 'loading'
         : 'CONNECT' }
     </button>
+    {sameId && 'This is your own id, you cant connect to yourself!'}
+
     {!loading && disconnectReason && <span>
       Disconnected due to: {disconnectReason}
     </span>}
