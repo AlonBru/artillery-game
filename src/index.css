@@ -1,18 +1,18 @@
 @font-face {
   font-family: michroma;
-  src: url(fonts/Michroma-Regular.ttf);
+  src: url(./assets/fonts/Michroma-Regular.ttf);
 }
 @font-face {
   font-family: greenScreen;
-  src: url(fonts/Greenscr.ttf);
+  src: url(./assets/fonts/Greenscr.ttf);
 }
 @font-face {
   font-family: top-secret;
-  src: url(fonts/Top-Secret.ttf);
+  src: url(./assets/fonts/Top-Secret.ttf);
 }
 @font-face {
   font-family: atwriter;
-  src: url(fonts/atwriter.ttf);
+  src: url(./assets/fonts/atwriter.ttf);
 }
 
 :root {
