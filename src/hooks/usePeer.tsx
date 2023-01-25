@@ -113,37 +113,51 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   const { current: peer } = peerRef;
 
+
   function connect ( peerId:string ) {
 
-    const conn = peer.connect(
-      peerId,
-      {
-        metadata: { userName: 'danny' }
-      }
+    if ( peer.open ) {
+
+      return makeConnection();
+
+    }
+    peer.once(
+      'open',
+      makeConnection
     );
-    setLoading( true );
-    conn.on(
-      'error',
-      ( err ) => console.error( err )
-    );
-    setTimeout(
-      () => {
+    function makeConnection () {
 
-        if ( conn.open ) {
 
-          handleConnection( conn );
-
-        } else {
-
-          setError( 'Peer already in a game' );
-          setLoading( false );
-
+      const conn = peer.connect(
+        peerId,
+        {
+          metadata: { userName: 'danny' }
         }
+      );
+      setLoading( true );
+      conn.on(
+        'error',
+        ( err ) => console.error( err )
+      );
+      setTimeout(
+        () => {
 
-      },
-      500
-    );
+          if ( conn.open ) {
 
+            handleConnection( conn );
+
+          } else {
+
+            setError( 'Peer already in a game' );
+            setLoading( false );
+
+          }
+
+        },
+        500
+      );
+
+    }
 
   }
 
