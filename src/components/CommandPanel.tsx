@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useConnectionContext } from '../hooks/useConnection';
 import { useGameLogic } from '../hooks/useGameManager';
 import { CommandSelector } from './CommandSelector';
+import { InstructionsMaker } from './InstructionsMaker';
 import { GreenScreenDisplay } from './styled';
 
 
@@ -17,6 +18,7 @@ const BasePanel = styled.aside`
   position: relative;
   font-family: michroma;
   border-radius: 8px;
+  overflow:hidden;
 `;
 const Screw = styled.div<{rotate:number}>`
   border-radius: 50%;
@@ -237,6 +239,7 @@ export function CommandPanel ( {
 
 
     return <PanelBase>
+      <InstructionsMaker/>
       <CommunticationDisplay>
         { awaitingPlayerInput && <>
           Where should we deploy general? <br/>

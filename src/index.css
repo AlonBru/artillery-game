@@ -10,6 +10,10 @@
   font-family: top-secret;
   src: url(fonts/Top-Secret.ttf);
 }
+@font-face {
+  font-family: atwriter;
+  src: url(fonts/atwriter.ttf);
+}
 
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
