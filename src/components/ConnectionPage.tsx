@@ -44,6 +44,79 @@ const Root = styled( 'div' )<{connected:boolean}>`
   }
 `;
 
+const IdSection = styled.section`
+  display: grid;
+  grid-template-areas: "id copy" "id link";
+  grid-row-gap: 5px ;
+  grid-column-gap: 10px ;
+  margin-bottom: 10px;
+`;
+const IdContainer = styled.div`
+  grid-area:id;
+  font-family: michroma;
+  border: 2px solid white;
+  padding: 10px;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+`;
+
+const CopyButton = styled.button`
+  position: relative;
+  height: 30px;
+  width: 30px;
+  background: #ccc;
+  cursor: pointer;
+`;
+const ClipboardButton = styled( CopyButton )`
+  ::after,::before{
+    content: "";
+    border-radius: 3px;
+    border: 2px solid #333;
+    width: 8px;
+    height: 11px;
+    position: absolute;
+    display: block;
+  }
+  ::after{
+    left: 5px;
+    bottom: 3px;
+    background: inherit;
+  }
+  ::before{
+    left: 9px;
+    bottom: 6px;
+  }
+  
+`;
+const LinkButton = styled( CopyButton )`
+
+  ::after,::before{
+    content: "";
+    border-radius: 5px;
+    border: 2px solid #333;
+    width: 6px;
+    height: 12px;
+    position: absolute;
+    display: block;
+    left:50%;
+    top:50%;
+    rotate: 50deg;
+    translate: -50% -50%;
+  }
+  --x: 2px;
+  --y: 3px;
+  ::after{
+    transform: translateY(var(--y)) translateX(var(--x));
+  }
+  ::before{
+    transform: translateY(calc(0px - var(--y) )) translateX(calc(0px - var(--x) ));
+  }
+  
+`;
+
 export function ConnectionPage ( {
   connect,
   id,
@@ -57,34 +130,86 @@ export function ConnectionPage ( {
   disconnectReason:string|undefined;
 } ) {
 
-  const [ peerId, setId ] = useState( '' );
+  const [ peerId, setId ] = useState( () => {
+
+    const searchParams = new URLSearchParams( document.location.search );
+    return searchParams.get( 'peer' ) || '';
+
+  } );
+  // auto connect if peerId provided
   useEffect(
     () => {
 
-      setId( '' );
+      if ( peerId !== '' ) {
+
+        connect( peerId );
+
+      }
+
+    },
+    []
+  );
+  // clear id on connection
+  useEffect(
+    () => {
+
+      if ( connected ) {
+
+        setId( '' );
+
+      }
 
     },
     [ connected ]
   );
   const sameId = peerId === id;
   const disabled = !peerId || connected || loading || sameId;
+  function copyId () {
+
+    navigator.clipboard.writeText( id as string );
+
+  }
   return <Root connected={connected} >
-    <span>Your id is {' '}
-      <button
-        disabled={!id}
-        title="copy to clipboard"
+    Your id is:
+    <IdSection>
+      <IdContainer
+        onClick={copyId}
+        title="copy id to clipboard"
+      >
+        {id || 'Loading...'}
+      </IdContainer>
+      <ClipboardButton
+        title="copy id to clipboard"
+        onClick={copyId}
+      >
+
+      </ClipboardButton>
+      <LinkButton
+        title="copy direct link for your peer"
         onClick={() => {
 
-          navigator.clipboard.writeText( id as string );
+          const { origin, pathname } = document.location;
+          const peerLink = `${origin}${pathname}?peer=${encodeURIComponent( id as string )}`;
+          if ( import.meta.env.DEV ) {
 
-        } }>
-        {id}
-      </button>.
-    </span>
+            window.open(
+              peerLink,
+              '_blank',
+            );
+
+          }
+          navigator.clipboard.writeText( peerLink );
+
+        } }
+      >
+
+      </LinkButton>
+    </IdSection>
     <br />
     Send it to a friend or type in their id to connect: <br />
     <input
       value={peerId}
+      title={peerId}
       onChange={( { target: { value } } ) => setId( value )} />
     <button
       disabled={disabled}
