@@ -3,7 +3,8 @@ import styled from 'styled-components';
 
 const Root = styled( 'div' )<{connected:boolean}>`
   --panel-width: 15px;
-  background: #333;
+  font-family: 'Courier New', Courier, monospace;
+  background: #222;
   position: absolute;
   top: 0;
   z-index: 1;
@@ -42,6 +43,11 @@ const Root = styled( 'div' )<{connected:boolean}>`
     transform-origin: top;
     transform: rotateX(-90deg);
   }
+`;
+
+const GameTitle = styled.h1`
+  font-family:top-secret;
+  color: #2ac000;
 `;
 
 const IdSection = styled.section`
@@ -170,6 +176,9 @@ export function ConnectionPage ( {
 
   }
   return <Root connected={connected} >
+    <GameTitle>
+      [ Unnamed Artillery game ]
+    </GameTitle>
     Your id is:
     <IdSection>
       <IdContainer
@@ -207,23 +216,29 @@ export function ConnectionPage ( {
     </IdSection>
     <br />
     Send it to a friend or type in their id to connect: <br />
-    <input
-      value={peerId}
-      title={peerId}
-      onChange={( { target: { value } } ) => setId( value )} />
-    <button
-      disabled={disabled}
-
-      onClick={() => {
-
-        connect( peerId );
-
-      } }
+    <div
+      style={{
+        display: 'flex'
+      }}
     >
-      {loading
-        ? 'loading'
-        : 'CONNECT' }
-    </button>
+      <input
+        value={peerId}
+        title={peerId}
+        onChange={( { target: { value } } ) => setId( value )} />
+      <button
+        disabled={disabled}
+
+        onClick={() => {
+
+          connect( peerId );
+
+        } }
+      >
+        {loading
+          ? 'loading'
+          : 'CONNECT ->' }
+      </button>
+    </div>
     {sameId && 'This is your own id, you cant connect to yourself!'}
 
     {!loading && disconnectReason && <span>
