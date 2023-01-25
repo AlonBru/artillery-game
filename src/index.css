@@ -1,10 +1,10 @@
 @font-face {
   font-family: michroma;
-  src: url(Michroma-Regular.ttf);
+  src: url(fonts/Michroma-Regular.ttf);
 }
 @font-face {
   font-family: greenScreen;
-  src: url(Greenscr.ttf);
+  src: url(fonts/Greenscr.ttf);
 }
 
 :root {
