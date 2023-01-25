@@ -11,7 +11,7 @@ const BoardCellRoot = styled.button`
   background: ${( { theme } ) => theme.screen.backgroundColor};
   position: relative;
   box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 5px inset;
-  :not(:disabled):hover{
+  :not(:disabled):hover,:focus{
     box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 15px inset;
     /* outline: yellow solid 1px; */
   }
