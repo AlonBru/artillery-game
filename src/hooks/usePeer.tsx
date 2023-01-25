@@ -148,7 +148,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
           } else {
 
-            setError( 'Peer already in a game' );
+            setError( 'Peer does not exist or already in a game' );
             setLoading( false );
 
           }
