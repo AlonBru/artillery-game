@@ -27,12 +27,39 @@ const BoardRoot = styled.main`
   padding: 3px;
   box-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
 `;
-const Player = styled.div`
-  width: 66%;
-  height: 66%;
+const Player = styled.div.attrs( { title: 'Your unit' } )`
+  width: 20px;
+  height: 20px;
   margin: auto;
-  background: red;
+  background: ${( { theme } ) => theme.screen.text.color};
   border-radius: 50%;
+  position: relative;
+  filter: drop-shadow( 0 0 3px ${( { theme } ) => theme.screen.text.glowColor});
+  ::before{
+    content:"";
+    display: block;
+    position: absolute;
+    height: 50%;
+    width: 19%;
+    top: 0%;
+    left: 50%;
+    translate: -50% 0;
+    background: ${( { theme } ) => theme.screen.text.color};
+    transform-origin: top center;
+    transform: translateY(3px) translateX(6px) rotate(-134deg);  }
+  ::after{
+    content:"";
+    display: block;
+    position: absolute;
+    height: 40%;
+    width: 160%;
+    bottom: -7%;
+    left: 50%;
+    border-radius: 7px;
+    translate: -50% 0;
+    background: ${( { theme } ) => theme.screen.backgroundColor};
+    border: solid 2px ${( { theme } ) => theme.screen.text.color};
+  }
 `;
 const Wreck = styled.div`
   width: 0;
@@ -86,12 +113,31 @@ const Wreck = styled.div`
     }
   }
 `;
-const Crater = styled.div`
-  width: 66%;
-  height: 66%;
+const Crater = styled.div.attrs( { title: 'Shelled area' } )`
+  width: 100%;
+  height: 100%;
   margin: auto;
-  background: black;
-  border-radius: 50%;
+  /* background: black; */
+  position: relative;
+  /* border-radius: 50%; */
+  overflow: hidden;
+  ::after,::before{
+    content:"";
+    display: block;
+    position: absolute;
+    width: 4px;
+    height: 150%;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    background: ${( { theme } ) => theme.screen.text.color};
+  }
+  ::before{
+    transform: rotate(-45deg);
+  }
+  ::after{
+    transform: rotate(45deg);
+  }
 `;
 const Reticule = styled.div<{position:Vector2}>`
   margin: auto;
@@ -153,18 +199,29 @@ const Reticule = styled.div<{position:Vector2}>`
     }
   } 
 `;
-
-const LastKnownPosition = styled.div`
+const LastKnownPosition = styled.div.attrs( { title: 'opponent\'s last known position' } )`
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 10px 10px 0 10px;
-  border-color: #007bff transparent transparent transparent;
+  border-width: 25px 14px 0 14px;
+  border-color: ${( { theme } ) => theme.screen.text.color} transparent transparent transparent;
   position: absolute;
-  top: 50%;
+  top: 25%;
   left: 50%;
   margin: auto;
   transform: rotateZ(360deg) translate(-50%);
+  filter: drop-shadow( 0 0 3px ${( { theme } ) => theme.screen.text.glowColor});
+  animation: blink .5s ;
+  animation-iteration-count: infinite;
+  @keyframes blink{
+    from {
+      opacity: 0.4;
+    }
+    to{
+      
+      opacity: 0.8;
+    }
+  }
 `;
 type BoardProps = {
   commandMode: CommandMode;
