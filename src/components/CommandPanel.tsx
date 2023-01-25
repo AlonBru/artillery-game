@@ -44,6 +44,7 @@ const CommunticationDisplay = styled( GreenScreenDisplay )`
   padding: 14px;
   height: 170px;
   max-width: 400px;
+  margin: 0 auto;
   position: relative;
   overflow: hidden;
 `;

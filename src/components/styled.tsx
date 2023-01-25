@@ -11,7 +11,7 @@ export const GreenScreenDisplay = styled.div`
   background: ${( { theme } ) => theme.screen.backgroundColor};
   color: ${( { theme } ) => theme.screen.text.color};
   font-family: greenScreen;
-  border-radius: 10px;
+  border-radius: 15px;
   border: 5px inset #666;
   white-space: pre-wrap;
   text-transform: uppercase;
