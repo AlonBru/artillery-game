@@ -8,10 +8,6 @@ export const BoardColumn = styled.div`
   height: 100%;
 `;
 export const GreenScreenDisplay = styled.div`
-  @font-face {
-    font-family: greenScreen;
-    src: url(Greenscr.ttf);
-  }
   background: ${( { theme } ) => theme.screen.backgroundColor};
   color: ${( { theme } ) => theme.screen.text.color};
   font-family: greenScreen;

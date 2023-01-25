@@ -15,10 +15,6 @@ const BasePanel = styled.aside`
   border: 3px outset #555;
   padding: 13px;
   position: relative;
-  @font-face {
-    font-family: michroma;
-    src: url(Michroma-Regular.ttf);
-  }
   font-family: michroma;
   border-radius: 8px;
 `;
