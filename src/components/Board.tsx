@@ -234,16 +234,21 @@ export function Board ( {
   dispatch,
 }: BoardProps ) {
 
-  const { lastKnown, } = useGameLogic();
+  const { lastKnown, awaitingPlayerInput } = useGameLogic();
   function clearCursor () {
 
+    if ( !awaitingPlayerInput ) {
+
+      // if command was dispatched already, do not clear cursor
+      return;
+
+    }
     setCursor( null );
 
   }
   return <Screen>
     <BoardRoot
-      onBlur={( { target, currentTarget } ) => {
-
+      onBlur={( { currentTarget } ) => {
 
         // Give browser time to focus the next element
         requestAnimationFrame( () => {
