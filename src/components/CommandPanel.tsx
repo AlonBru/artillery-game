@@ -261,7 +261,7 @@ export function CommandPanel ( {
       />
       <AcceptButton
         onClick={dispatch}
-        canAct={awaitingPlayerInput && !!cursor}
+        canAct={false}
 
       />
     </PanelBase>;
@@ -269,10 +269,9 @@ export function CommandPanel ( {
   }
   const requiresCoord = commandMode !== 'RELOAD';
 
-  const commandInputValid = commandMode === 'RELOAD' || ( commandMode !== null && cursor !== null );
   const canAct =
   awaitingPlayerInput &&
-  commandInputValid;
+  commandMode === 'RELOAD';
 
   return <PanelBase>
     <CommunticationDisplay>

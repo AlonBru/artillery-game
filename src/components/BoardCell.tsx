@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef } from 'react';
+import { ComponentPropsWithoutRef, DispatchWithoutAction } from 'react';
 import styled from 'styled-components';
 import { BOARD_SIZE, PLAYER_MOVEMENT } from '../constants';
 import { useGameLogic } from '../hooks/useGameManager';
@@ -28,6 +28,7 @@ type Props = {
   commandMode: CommandMode;
   selectSector(): void;
   clearCursor(): void;
+  dispatch:DispatchWithoutAction;
 } & Pick<ComponentPropsWithoutRef<'button'>, 'children'>;
 
 export function BoardCell ( {
@@ -37,7 +38,8 @@ export function BoardCell ( {
   playerPosition,
   commandMode,
   selectSector,
-  clearCursor
+  clearCursor,
+  dispatch,
 }: Props ) {
 
   const { awaitingPlayerInput, board } = useGameLogic();
@@ -108,6 +110,7 @@ export function BoardCell ( {
   return <BoardCellRoot
     onMouseEnter={handleCellInteraction}
     onFocus={handleCellInteraction}
+    onClick={dispatch}
     disabled={!canSelect()}
     onMouseLeave={( { currentTarget } ) => {
 

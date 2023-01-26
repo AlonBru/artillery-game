@@ -1,4 +1,4 @@
-import { SetStateAction, Dispatch } from 'react';
+import { SetStateAction, Dispatch, DispatchWithoutAction } from 'react';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
 import { BoardCell } from './BoardCell';
@@ -222,6 +222,7 @@ type BoardProps = {
   setCursor:Dispatch<SetStateAction<Vector2|null>>;
   board:Board;
   playerPosition:Vector2|null;
+  dispatch:DispatchWithoutAction;
 };
 
 export function Board ( {
@@ -229,7 +230,8 @@ export function Board ( {
   playerPosition,
   cursor,
   setCursor,
-  board
+  board,
+  dispatch,
 }: BoardProps ) {
 
   const { lastKnown, } = useGameLogic();
@@ -277,6 +279,7 @@ export function Board ( {
 
             }}
             clearCursor={clearCursor}
+            dispatch={dispatch}
           >
             <>
               {item === 'PLAYER' && <Player />}
@@ -292,8 +295,6 @@ export function Board ( {
       { cursor !== null && <Reticule position={cursor}/>}
     </BoardRoot>
 
-    {/* {cursor !== null && <HLine y={cursor.y}/>}
-    {cursor !== null && <VLine x={cursor.x}/>} */}
   </Screen>;
 
 }

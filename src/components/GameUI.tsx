@@ -21,7 +21,6 @@ const Root = styled.section<{waitingForPeer:boolean}>`
 export function GameUI () {
 
   const {
-    status,
     sendCommand: sendEvent,
     playerPosition,
     board,
@@ -87,7 +86,9 @@ export function GameUI () {
           setCursor={setCursor}
           cursor={cursor}
           board={board}
-          playerPosition={playerPosition} />
+          playerPosition={playerPosition}
+          dispatch={dispatch}
+        />
         <CommandPanel
           dispatch={dispatch}
           setCommandMode={setCommandMode}
