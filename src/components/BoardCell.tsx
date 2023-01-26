@@ -75,6 +75,13 @@ export function BoardCell ( {
           return false;
 
         }
+        if ( playerPosition.x === x &&
+          playerPosition.y === y
+        ) {
+
+          return false;
+
+        }
         const dx = Math.abs( playerPosition.x - x );
         const dy = Math.abs( playerPosition.y - y );
         const targetInRange = dx <= PLAYER_MOVEMENT && dy <= PLAYER_MOVEMENT;
