@@ -148,7 +148,7 @@ export function ConnectionPage ( {
 
       if ( peerId !== '' ) {
 
-        connect( peerId );
+        attemptConnection();
 
       }
 
@@ -224,15 +224,21 @@ export function ConnectionPage ( {
       <input
         value={peerId}
         title={peerId}
-        onChange={( { target: { value } } ) => setId( value )} />
+        onChange={( { target: { value } } ) => setId( value )}
+        onKeyDown={( { key } ) => {
+
+          if ( key === 'Enter' ) {
+
+            attemptConnection();
+
+          }
+
+        }}
+      />
       <button
         disabled={disabled}
 
-        onClick={() => {
-
-          connect( peerId );
-
-        } }
+        onClick={attemptConnection }
       >
         {loading
           ? 'loading'
@@ -245,6 +251,13 @@ export function ConnectionPage ( {
       Disconnected due to: {disconnectReason}
     </span>}
   </Root>;
+
+
+  function attemptConnection () {
+
+    connect( peerId );
+
+  }
 
 }
 
