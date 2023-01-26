@@ -3,18 +3,21 @@ import styled from 'styled-components';
 
 const Root = styled.div`
   display: grid;
-  grid-template-columns: 1fr 40px;
+  grid-template-columns: 1fr auto;
   grid-column-gap: 5px;
+  align-items: center;
+  margin-bottom: 10px;
+  --paper-color: #ffffc5;
 `;
 
 const InstructionPrinter = styled.section<{show:boolean|undefined}>`
   position: relative;
   background:red;
-  border: 20px solid #6e6e6e;
+  border: 10px solid #6e6e6e;
   height: 4px;
   background: #333;
   border-radius:30px;
-  margin-bottom: 10px;
+  // ripped edge in printer
   ::after{
     content:${( { show } ) => ( show === undefined
     ? ''
@@ -25,9 +28,10 @@ const InstructionPrinter = styled.section<{show:boolean|undefined}>`
     height:24px;
     width:calc(100% - 8px);
     left:4px;
+    filter: drop-shadow(10px 12px 2px #2e2d2d47);
     background-image: 
-      linear-gradient(-135deg,#ffffc5 25%,transparent 25%)
-      ,linear-gradient(135deg,#ffffc5 25%,transparent 25%)
+      linear-gradient(-135deg,var(--paper-color) 25%,transparent 25%)
+      ,linear-gradient(135deg,var(--paper-color) 25%,transparent 25%)
     ;
     background-size: 3% 49px;
     background-position-x: -6px;
@@ -35,6 +39,7 @@ const InstructionPrinter = styled.section<{show:boolean|undefined}>`
     animation-name: appear;
     animation-iteration-count: 1;
     animation-duration: 1s;
+
     @keyframes appear{
       from{
         background-position-y: -10px ;
@@ -64,6 +69,11 @@ const Page = styled.div<{show?:boolean}>`
   justify-content: end;
 
   animation-timing-function: ease-in;
+  transition: rotate .1s, translate .1s;
+  :hover,:focus{
+    rotate: -1.5deg;
+    translate: 0 2px;
+  }
   transform: translateX(${( { show } ) => ( show
     ? '0px'
     : 'calc( 100% + 100px)'
@@ -108,8 +118,8 @@ const Page = styled.div<{show?:boolean}>`
   ::before{
     top: -5px;
     background-image: 
-      linear-gradient(-45deg,#ffffc5 25%,transparent 25%),
-      linear-gradient(45deg,#ffffc5 25%,transparent 25%)
+      linear-gradient(-45deg,var(--paper-color) 25%,transparent 25%),
+      linear-gradient(45deg,var(--paper-color) 25%,transparent 25%)
     ;
     background-size: 3% 15px;
   }
@@ -117,13 +127,12 @@ const Page = styled.div<{show?:boolean}>`
     z-index:1;
     bottom: -5px;
     background-image: 
-      linear-gradient(135deg,#ffffc5 25%,transparent 25%),
-      linear-gradient(-135deg,#ffffc5 25%,transparent 25%)
+      linear-gradient(135deg,var(--paper-color) 25%,transparent 25%),
+      linear-gradient(-135deg,var(--paper-color) 25%,transparent 25%)
     ;
     background-size: 3% 54px;
     background-position-x: -5px;
   }
-
 
   @keyframes print{
     0%{
@@ -147,13 +156,13 @@ const Page = styled.div<{show?:boolean}>`
       transform:translateX(-15px) translateY(20px) rotate(-25deg);
     }
     100%{
-      transform:translateX(calc( 100% + 100px)) translateY(10px) rotate(-20deg);
+      transform:translateX(calc( 100% + 100px)) translateY(10px) rotate(-110deg);
     }
   }
 
 `;
 const PageContent = styled.article`
-  background: #ffffc5;
+  background: var(--paper-color);
   padding:20px;
   min-width: 200px;
   font-size: 1.1em;
@@ -164,50 +173,20 @@ const PageContent = styled.article`
   *::first-letter{
     text-transform: capitalize;
   }
-  /* ::before{
-    content:"";
-    display: block;
-    position: absolute;
-    bottom:100%;
-    height:24px;
-    width:100%;
-    left:0;
-    background-image: 
-      linear-gradient(-45deg,#ffffc5 25%,transparent 25%)
-      ,linear-gradient(45deg,#ffffc5 25%,transparent 25%)
-      ;
-    background-size: 3% 25px;
-    background-repeat: repeat-x;
-  }
-  ::after{
-    content:"";
-    display: block;
-    position: absolute;
-    top:100%;
-    height:24px;
-    width:100%;
-    left:0;
-    background-image: 
-      linear-gradient(135deg,#ffffc5 25%,transparent 25%)
-      ,linear-gradient(-135deg,#ffffc5 25%,transparent 25%)
-    ;
-    background-size: 3% 25px;
-    background-repeat: repeat-x;
-  } */
   
 `;
 const Button = styled.button`
   background: #222;
   border: 2px outset #222;
   font-family: monospace;
-  font-size: 20px;
-  cursor:pointer;
+  font-size: 1em;
   color: #eee;
-  width: 44px;
-  height: 44px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  line-height: 30px;
-  :hover,:focus{
+  line-height: 24px;
+  :hover:not(:disabled),:focus{
+    cursor:pointer;
     filter: brightness(1.5);
   }
 `;
@@ -221,18 +200,19 @@ const rules = [
 
 export function InstructionsMaker () {
 
-  const [ show, setShow ] = useState<boolean>( );
+  const [ showPaper, setShow ] = useState<boolean>( );
   return <Root>
     <InstructionPrinter
-      show={show}
+      show={showPaper}
     >
-      <Page show={show}
-        tabIndex={show
+      <Page show={showPaper}
+        tabIndex={showPaper
           ? 0
           : undefined}
-        onClick={() => {
+        onClick={( { currentTarget } ) => {
 
           setShow( false );
+          currentTarget.blur();
 
         }}
         onKeyDown={( { key, currentTarget } ) => {
@@ -268,6 +248,7 @@ export function InstructionsMaker () {
     <Button
       onClick={() => setShow( true )}
       title="instructions"
+      disabled={showPaper}
     >
       i
     </Button>
