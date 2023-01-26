@@ -240,7 +240,22 @@ export function Board ( {
   }
   return <Screen>
     <BoardRoot
-      onBlur={clearCursor}
+      onBlur={( { target, currentTarget } ) => {
+
+
+        // Give browser time to focus the next element
+        requestAnimationFrame( () => {
+
+          // Check if the new focused element is a child of the original container
+          if ( !currentTarget.contains( document.activeElement ) ) {
+
+            clearCursor();
+
+          }
+
+        } );
+
+      }}
       onMouseLeave={clearCursor}
     >
       {board.map( ( column, x ) => <BoardColumn key={x}>
