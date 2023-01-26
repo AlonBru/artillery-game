@@ -29,7 +29,7 @@ const BoardRoot = styled.main`
   padding: 3px;
   box-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
 `;
-const Player = styled.div.attrs( { title: 'Your unit' } )`
+const Player = styled.div.attrs( { title: 'Your unit' } )<{position?:Vector2}>`
   width: 20px;
   height: 20px;
   margin: auto;
@@ -62,6 +62,23 @@ const Player = styled.div.attrs( { title: 'Your unit' } )`
     background: ${( { theme } ) => theme.screen.backgroundColor};
     border: solid 2px ${( { theme } ) => theme.screen.text.color};
   }
+  ${( { position } ) => {
+
+    if ( !position ) {
+
+      return 'unset';
+
+    }
+    const { x, y } = position;
+    return `
+    position: absolute;
+    pointer-events: none;
+    translate: 
+      calc( ${25 + x * 50}px - 50% ) 
+      calc( ${25 + y * 50}px - 50% );
+    `;
+
+  }}
 `;
 const Wreck = styled.div`
   width: 0;
@@ -289,7 +306,7 @@ const markerMapper: {
   MOVE: Arrow,
   FIRE: Reticule,
   RELOAD: () => null,
-  INITIAL: Reticule
+  INITIAL: Player
 
 };
 
