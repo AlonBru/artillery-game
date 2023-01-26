@@ -86,8 +86,8 @@ const WaitingLine = styled.span`
 
 
 const Footer = styled.footer`
-  height: 50px;
-  padding: 10px;
+  height: 25px;
+  padding-inline: 10px;
 `;
 
 const ButtonContainer = styled.div`
@@ -202,6 +202,7 @@ function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
       }}
     />
     <Main>
+      <InstructionsMaker/>
       {children}
     </Main>
     <Footer>
@@ -239,7 +240,6 @@ export function CommandPanel ( {
 
 
     return <PanelBase>
-      <InstructionsMaker/>
       <CommunticationDisplay>
         { awaitingPlayerInput && <>
           Where should we deploy general? <br/>

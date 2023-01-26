@@ -3,18 +3,19 @@ import styled from 'styled-components';
 
 const Root = styled.div`
   display: grid;
-  grid-template-columns: 1fr 40px;
+  grid-template-columns: 1fr auto;
   grid-column-gap: 5px;
+  align-items: center;
+  margin-bottom: 10px;
 `;
 
 const InstructionPrinter = styled.section<{show:boolean|undefined}>`
   position: relative;
   background:red;
-  border: 20px solid #6e6e6e;
+  border: 10px solid #6e6e6e;
   height: 4px;
   background: #333;
   border-radius:30px;
-  margin-bottom: 10px;
   ::after{
     content:${( { show } ) => ( show === undefined
     ? ''
@@ -200,13 +201,13 @@ const Button = styled.button`
   background: #222;
   border: 2px outset #222;
   font-family: monospace;
-  font-size: 20px;
+  font-size: 1em;
   cursor:pointer;
   color: #eee;
-  width: 44px;
-  height: 44px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  line-height: 30px;
+  line-height: 24px;
   :hover,:focus{
     filter: brightness(1.5);
   }
