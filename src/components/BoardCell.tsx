@@ -10,21 +10,35 @@ const BoardCellRoot = styled.button`
   height: 100%;
   background: ${( { theme } ) => theme.screen.backgroundColor};
   position: relative;
-  box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 5px inset;
-  :not(:disabled):hover,:focus{
+  box-shadow: ${( { theme } ) => theme.screen.glowColor} 0px 0 5px inset;
+  
+  :not(:disabled){
     box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 15px inset;
-    /* outline: yellow solid 1px; */
+    :hover{
+      box-shadow: ${( { theme } ) => theme.screen.text.color} 0px 0 10px inset;
+
+    }
   }
   
 `;
-export function BoardCell ( {
-  x, y, children, playerPosition, commandMode, onClick
-}: {
+type Props = {
   x: Vector2['x'];
   y: Vector2['y'];
   playerPosition: Vector2 | null;
   commandMode: CommandMode;
-} & Pick<ComponentPropsWithoutRef<'button'>, 'children' | 'onClick'> ) {
+  selectSector(): void;
+  clearCursor(): void;
+} & Pick<ComponentPropsWithoutRef<'button'>, 'children'>;
+
+export function BoardCell ( {
+  x,
+  y,
+  children,
+  playerPosition,
+  commandMode,
+  selectSector,
+  clearCursor
+}: Props ) {
 
   const { awaitingPlayerInput, board } = useGameLogic();
 
@@ -81,9 +95,25 @@ export function BoardCell ( {
     }
 
   }
+  function handleCellInteraction () {
+
+    if ( canSelect() ) {
+
+      return selectSector();
+
+    }
+    clearCursor();
+
+  }
   return <BoardCellRoot
+    onMouseEnter={handleCellInteraction}
+    onFocus={handleCellInteraction}
     disabled={!canSelect()}
-    onClick={onClick}
+    onMouseLeave={( { currentTarget } ) => {
+
+      currentTarget.blur();
+
+    }}
   >
     {children}
   </BoardCellRoot>;

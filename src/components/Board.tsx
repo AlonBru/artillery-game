@@ -147,19 +147,13 @@ const Reticule = styled.div<{position:Vector2}>`
   position: absolute;
   width: 20px;
   height: 20px;
-  /* top:50%;
-  left:50%; */
   pointer-events: none;
-  /* transform: translate(${( { position: { x, y } } ) => `
-  calc( ${25 + x * 50}px - 50% ),
-  calc( ${25 + y * 50}px - 50% )
-  `}); */
+  border-radius: 50%;
+  transition: translate .2s;
+  filter: drop-shadow(0 0 3px ${( { theme } ) => theme.screen.text.glowColor}); 
   translate:${( { position: { x, y } } ) => `
   calc( ${25 + x * 50}px - 50% ) calc( ${25 + y * 50}px - 50% )
   `};
-  border-radius: 50%;
-  transition: translate .2s;
-  
   /* horizontal */
   ::before{
     content: "";
@@ -186,7 +180,6 @@ const Reticule = styled.div<{position:Vector2}>`
     linear-gradient(${( { theme } ) => theme.screen.text.color} 33%,transparent  33%, transparent 66%, ${( { theme } ) => theme.screen.text.color} 66%);
     transform: translateX(-50%);
   }
-  /* transform-origin: 50% 50%; */
   animation: target-animate 1s  alternate infinite ease-in-out;
   @keyframes target-animate {
     from{
@@ -239,9 +232,17 @@ export function Board ( {
   board
 }: BoardProps ) {
 
-  const { lastKnown } = useGameLogic();
+  const { lastKnown, } = useGameLogic();
+  function clearCursor () {
+
+    setCursor( null );
+
+  }
   return <Screen>
-    <BoardRoot>
+    <BoardRoot
+      onBlur={clearCursor}
+      onMouseLeave={clearCursor}
+    >
       {board.map( ( column, x ) => <BoardColumn key={x}>
         {column.map( ( item, y ) => {
 
@@ -254,14 +255,14 @@ export function Board ( {
             x={x}
             y={y}
             key={`${x}+${y}`}
-            onClick={() => {
+            selectSector={() => {
 
-              setCursor( {
-                x,
-                y
-              } );
+              setCursor( { x,
+                y } );
 
-            }}>
+            }}
+            clearCursor={clearCursor}
+          >
             <>
               {item === 'PLAYER' && <Player />}
               {cratered && <Crater />}
