@@ -1,4 +1,6 @@
-import { SetStateAction, Dispatch, DispatchWithoutAction } from 'react';
+import {
+  SetStateAction, Dispatch, DispatchWithoutAction, ReactNode
+} from 'react';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
 import { BoardCell } from './BoardCell';
@@ -145,8 +147,8 @@ const Reticule = styled.div<{position:Vector2}>`
   border: ${( { theme } ) => theme.screen.text.color} 3px solid;
   font-family: serif;
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   pointer-events: none;
   border-radius: 50%;
   transition: translate .2s;
@@ -192,6 +194,62 @@ const Reticule = styled.div<{position:Vector2}>`
     }
   } 
 `;
+const Arrow = styled.div<{from:Vector2, position:Vector2}>`
+  background: ${( { theme } ) => theme.screen.text.color};
+  position: absolute;
+  width: 3px;
+  height: 22px;
+  pointer-events: none;
+  transition: translate .2s;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 0 3px ${( { theme } ) => theme.screen.text.glowColor}); 
+  rotate: ${( { position, from } ) => getAngle(
+    from,
+    position
+  )}deg;
+  translate:${( { position: { x, y } } ) => `
+    calc( ${25 + x * 50}px - 2px - 50% ) 
+    calc( ${25 + y * 50}px - 2px - 100% )
+  `};
+  scale: 1 ${( { position: to, from } ) => {
+
+    const { x: toX, y: toY } = to;
+    const { x, y } = from;
+    const dx = x - toX;
+    const dy = y - toY;
+    return dx * dy === 0
+      ? 1
+      : 1.2;
+
+  }};
+
+  /* arrow head */
+  ::before{
+    content: "";
+    display: block;
+    position: relative;
+    width: 0;
+    left: 50%;
+    top: 100%;
+    height: 3px;
+    border-style: solid;
+    border-width: 10px 7px 0 7px;
+    border-color: ${( { theme } ) => theme.screen.text.color} transparent transparent transparent;
+    transform: translateX(-50%);
+  }
+
+  animation: arrow-animate .5s  alternate infinite ease-in-out;
+  @keyframes arrow-animate {
+    from{
+      transform: translateY(-15px) ;
+      opacity: 1;
+    }
+    to{
+      transform: translateY(-10px) ;
+      opacity: .8;
+    }
+  } 
+`;
 const LastKnownPosition = styled.div.attrs( { title: 'opponent\'s last known position' } )`
   width: 0;
   height: 0;
@@ -225,6 +283,16 @@ type BoardProps = {
   dispatch:DispatchWithoutAction;
 };
 
+const markerMapper: {
+  [key in CommandMode]:( props:PropsType<typeof Arrow> )=>JSX.Element|null
+} = {
+  MOVE: Arrow,
+  FIRE: Reticule,
+  RELOAD: () => null,
+  INITIAL: Reticule
+
+};
+
 export function Board ( {
   commandMode,
   playerPosition,
@@ -246,6 +314,7 @@ export function Board ( {
     setCursor( null );
 
   }
+  const Marker = markerMapper[commandMode];
   return <Screen>
     <BoardRoot
       onBlur={( { currentTarget } ) => {
@@ -297,9 +366,27 @@ export function Board ( {
         } )}
       </BoardColumn> )}
 
-      { cursor !== null && <Reticule position={cursor}/>}
+      { cursor !== null && <Marker
+        position={cursor}
+        from={playerPosition as Vector2}
+      />}
     </BoardRoot>
 
   </Screen>;
+
+}
+
+function getAngle ( from:Vector2, to:Vector2 ):number {
+
+  const { x: fromX, y: fromY } = from;
+  const { x, y } = to;
+  const dx = x - fromX;
+  const dy = y - fromY;
+
+  const angle = ( 180 / Math.PI ) * Math.atan2(
+    dy,
+    dx
+  ) - 90;
+  return angle;
 
 }
