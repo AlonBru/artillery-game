@@ -21,6 +21,7 @@ const Root = styled.section<{waitingForPeer:boolean}>`
 export function GameUI () {
 
   const {
+    status,
     sendCommand: sendEvent,
     playerPosition,
     board,
