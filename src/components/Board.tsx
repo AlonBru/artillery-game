@@ -1,4 +1,6 @@
-import { SetStateAction, Dispatch } from 'react';
+import {
+  SetStateAction, Dispatch, DispatchWithoutAction, ReactNode
+} from 'react';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
 import { BoardCell } from './BoardCell';
@@ -27,7 +29,7 @@ const BoardRoot = styled.main`
   padding: 3px;
   box-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
 `;
-const Player = styled.div.attrs( { title: 'Your unit' } )`
+const Player = styled.div.attrs( { title: 'Your unit' } )<{position?:Vector2}>`
   width: 20px;
   height: 20px;
   margin: auto;
@@ -60,6 +62,23 @@ const Player = styled.div.attrs( { title: 'Your unit' } )`
     background: ${( { theme } ) => theme.screen.backgroundColor};
     border: solid 2px ${( { theme } ) => theme.screen.text.color};
   }
+  ${( { position } ) => {
+
+    if ( !position ) {
+
+      return 'unset';
+
+    }
+    const { x, y } = position;
+    return `
+    position: absolute;
+    pointer-events: none;
+    translate: 
+      calc( ${25 + x * 50}px - 50% ) 
+      calc( ${25 + y * 50}px - 50% );
+    `;
+
+  }}
 `;
 const Wreck = styled.div`
   width: 0;
@@ -145,21 +164,15 @@ const Reticule = styled.div<{position:Vector2}>`
   border: ${( { theme } ) => theme.screen.text.color} 3px solid;
   font-family: serif;
   position: absolute;
-  width: 20px;
-  height: 20px;
-  /* top:50%;
-  left:50%; */
+  width: 18px;
+  height: 18px;
   pointer-events: none;
-  /* transform: translate(${( { position: { x, y } } ) => `
-  calc( ${25 + x * 50}px - 50% ),
-  calc( ${25 + y * 50}px - 50% )
-  `}); */
+  border-radius: 50%;
+  transition: translate .2s;
+  filter: drop-shadow(0 0 3px ${( { theme } ) => theme.screen.text.glowColor}); 
   translate:${( { position: { x, y } } ) => `
   calc( ${25 + x * 50}px - 50% ) calc( ${25 + y * 50}px - 50% )
   `};
-  border-radius: 50%;
-  transition: translate .2s;
-  
   /* horizontal */
   ::before{
     content: "";
@@ -186,7 +199,6 @@ const Reticule = styled.div<{position:Vector2}>`
     linear-gradient(${( { theme } ) => theme.screen.text.color} 33%,transparent  33%, transparent 66%, ${( { theme } ) => theme.screen.text.color} 66%);
     transform: translateX(-50%);
   }
-  /* transform-origin: 50% 50%; */
   animation: target-animate 1s  alternate infinite ease-in-out;
   @keyframes target-animate {
     from{
@@ -195,6 +207,62 @@ const Reticule = styled.div<{position:Vector2}>`
     }
     to{
       transform: scale(.9) ;
+      opacity: .8;
+    }
+  } 
+`;
+const Arrow = styled.div<{from:Vector2, position:Vector2}>`
+  background: ${( { theme } ) => theme.screen.text.color};
+  position: absolute;
+  width: 3px;
+  height: 22px;
+  pointer-events: none;
+  transition: translate .2s;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 0 3px ${( { theme } ) => theme.screen.text.glowColor}); 
+  rotate: ${( { position, from } ) => getAngle(
+    from,
+    position
+  )}deg;
+  translate:${( { position: { x, y } } ) => `
+    calc( ${25 + x * 50}px - 2px - 50% ) 
+    calc( ${25 + y * 50}px - 2px - 100% )
+  `};
+  scale: 1 ${( { position: to, from } ) => {
+
+    const { x: toX, y: toY } = to;
+    const { x, y } = from;
+    const dx = x - toX;
+    const dy = y - toY;
+    return dx * dy === 0
+      ? 1
+      : 1.2;
+
+  }};
+
+  /* arrow head */
+  ::before{
+    content: "";
+    display: block;
+    position: relative;
+    width: 0;
+    left: 50%;
+    top: 100%;
+    height: 3px;
+    border-style: solid;
+    border-width: 10px 7px 0 7px;
+    border-color: ${( { theme } ) => theme.screen.text.color} transparent transparent transparent;
+    transform: translateX(-50%);
+  }
+
+  animation: arrow-animate .5s  alternate infinite ease-in-out;
+  @keyframes arrow-animate {
+    from{
+      transform: translateY(-15px) ;
+      opacity: 1;
+    }
+    to{
+      transform: translateY(-10px) ;
       opacity: .8;
     }
   } 
@@ -229,6 +297,17 @@ type BoardProps = {
   setCursor:Dispatch<SetStateAction<Vector2|null>>;
   board:Board;
   playerPosition:Vector2|null;
+  dispatch:DispatchWithoutAction;
+};
+
+const markerMapper: {
+  [key in CommandMode]:( props:PropsType<typeof Arrow> )=>JSX.Element|null
+} = {
+  MOVE: Arrow,
+  FIRE: Reticule,
+  RELOAD: () => null,
+  INITIAL: Player
+
 };
 
 export function Board ( {
@@ -236,12 +315,42 @@ export function Board ( {
   playerPosition,
   cursor,
   setCursor,
-  board
+  board,
+  dispatch,
 }: BoardProps ) {
 
-  const { lastKnown } = useGameLogic();
+  const { lastKnown, awaitingPlayerInput } = useGameLogic();
+  function clearCursor () {
+
+    if ( !awaitingPlayerInput ) {
+
+      // if command was dispatched already, do not clear cursor
+      return;
+
+    }
+    setCursor( null );
+
+  }
+  const Marker = markerMapper[commandMode];
   return <Screen>
-    <BoardRoot>
+    <BoardRoot
+      onBlur={( { currentTarget } ) => {
+
+        // Give browser time to focus the next element
+        requestAnimationFrame( () => {
+
+          // Check if the new focused element is a child of the original container
+          if ( !currentTarget.contains( document.activeElement ) ) {
+
+            clearCursor();
+
+          }
+
+        } );
+
+      }}
+      onMouseLeave={clearCursor}
+    >
       {board.map( ( column, x ) => <BoardColumn key={x}>
         {column.map( ( item, y ) => {
 
@@ -254,14 +363,15 @@ export function Board ( {
             x={x}
             y={y}
             key={`${x}+${y}`}
-            onClick={() => {
+            selectSector={() => {
 
-              setCursor( {
-                x,
-                y
-              } );
+              setCursor( { x,
+                y } );
 
-            }}>
+            }}
+            clearCursor={clearCursor}
+            dispatch={dispatch}
+          >
             <>
               {item === 'PLAYER' && <Player />}
               {cratered && <Crater />}
@@ -273,11 +383,27 @@ export function Board ( {
         } )}
       </BoardColumn> )}
 
-      { cursor !== null && <Reticule position={cursor}/>}
+      { cursor !== null && <Marker
+        position={cursor}
+        from={playerPosition as Vector2}
+      />}
     </BoardRoot>
 
-    {/* {cursor !== null && <HLine y={cursor.y}/>}
-    {cursor !== null && <VLine x={cursor.x}/>} */}
   </Screen>;
+
+}
+
+function getAngle ( from:Vector2, to:Vector2 ):number {
+
+  const { x: fromX, y: fromY } = from;
+  const { x, y } = to;
+  const dx = x - fromX;
+  const dy = y - fromY;
+
+  const angle = ( 180 / Math.PI ) * Math.atan2(
+    dy,
+    dx
+  ) - 90;
+  return angle;
 
 }
