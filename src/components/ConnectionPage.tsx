@@ -224,6 +224,7 @@ export function ConnectionPage ( {
       <input
         disabled={disabled}
         value={peerId}
+        placeholder="Opponent's id"
         title={peerId}
         onChange={( { target: { value } } ) => setId( value )}
         onKeyDown={( { key } ) => {
