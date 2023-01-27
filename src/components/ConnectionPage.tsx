@@ -222,6 +222,7 @@ export function ConnectionPage ( {
       }}
     >
       <input
+        disabled={disabled}
         value={peerId}
         title={peerId}
         onChange={( { target: { value } } ) => setId( value )}
