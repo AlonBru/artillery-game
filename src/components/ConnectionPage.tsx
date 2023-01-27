@@ -59,7 +59,7 @@ const IdSection = styled.section`
 `;
 const IdContainer = styled.div`
   grid-area:id;
-  font-family: michroma;
+  font-family: monospace;
   border: 2px solid white;
   padding: 10px;
   font-size: 20px;
@@ -222,7 +222,9 @@ export function ConnectionPage ( {
       }}
     >
       <input
+        disabled={disabled}
         value={peerId}
+        placeholder="Opponent's id"
         title={peerId}
         onChange={( { target: { value } } ) => setId( value )}
         onKeyDown={( { key } ) => {

@@ -87,7 +87,9 @@ export function GameUI () {
           setCursor={setCursor}
           cursor={cursor}
           board={board}
-          playerPosition={playerPosition} />
+          playerPosition={playerPosition}
+          dispatch={dispatch}
+        />
         <CommandPanel
           dispatch={dispatch}
           setCommandMode={setCommandMode}

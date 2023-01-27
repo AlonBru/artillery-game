@@ -3,6 +3,8 @@ import {
   useCallback, useEffect, useRef, useState
 } from 'react';
 
+const MAX_RETRIES = 10;
+const RETRY_INTERVAL_MS = 100;
 
 export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
@@ -15,6 +17,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     ( ) => {
 
       setError( 'Player left' );
+      setLoading( false );
       setConnection( null );
 
     },
@@ -44,6 +47,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
       }
       conn.close();
+      setLoading( false );
 
     },
     [ connection,
@@ -116,6 +120,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   function connect ( peerId:string ) {
 
+    setError( undefined );
     if ( peer.open ) {
 
       return makeConnection();
@@ -127,34 +132,41 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     );
     function makeConnection () {
 
-
       const conn = peer.connect(
         peerId,
         {
           metadata: { userName: 'danny' }
         }
       );
+
       setLoading( true );
       conn.on(
         'error',
         ( err ) => console.error( err )
       );
-      setTimeout(
+
+      let tries = 0;
+      const interval = setInterval(
         () => {
 
           if ( conn.open ) {
 
             handleConnection( conn );
-
-          } else {
-
-            setError( 'Peer does not exist or already in a game' );
-            setLoading( false );
+            return clearInterval( interval );
 
           }
 
+          if ( tries === MAX_RETRIES ) {
+
+            setError( 'Peer does not exist or already in a game' );
+            setLoading( false );
+            return clearInterval( interval );
+
+          }
+          tries++;
+
         },
-        500
+        RETRY_INTERVAL_MS
       );
 
     }

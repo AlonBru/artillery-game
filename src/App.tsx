@@ -6,7 +6,6 @@ function App () {
 
   return <ThemeProvider theme={theme}>
     <Game/>
-    {import.meta.env.DEV && <Game/>}
   </ThemeProvider>;
 
 }
