@@ -15,6 +15,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     ( ) => {
 
       setError( 'Player left' );
+      setLoading( false );
       setConnection( null );
 
     },
@@ -44,6 +45,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
       }
       conn.close();
+      setLoading( false );
 
     },
     [ connection,
@@ -126,7 +128,6 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       makeConnection
     );
     function makeConnection () {
-
 
       const conn = peer.connect(
         peerId,
