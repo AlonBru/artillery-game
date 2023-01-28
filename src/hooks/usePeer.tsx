@@ -1,6 +1,7 @@
 import { Peer, DataConnection } from 'peerjs';
 import {
-  useCallback, useEffect, useRef, useState
+  useCallback,
+  useEffect, useRef, useState
 } from 'react';
 
 const MAX_RETRIES = 10;
@@ -9,24 +10,14 @@ const RETRY_INTERVAL_MS = 100;
 export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   const peerRef = useRef<Peer>( new Peer() );
+  const connectionRef = useRef < DataConnection|null>( null );
   const [ id, setId ] = useState<string>( );
-  const [ connection, setConnection ] = useState<DataConnection|null>( null );
-  const [ loading, setLoading ] = useState<boolean>( false );
+  const [ loading, setStatus ] = useState<ConnectionStatus>( 'DISCONNECTED' );
   const [ error, setError ] = useState<string>( );
-  const handleConnectionClosed = useCallback(
-    ( ) => {
-
-      setError( 'Player left' );
-      setLoading( false );
-      setConnection( null );
-
-    },
-    []
-  );
   const handleConnection = useCallback(
     ( conn:DataConnection ) => {
 
-      if ( !connection ) {
+      if ( connectionRef.current === null ) {
 
         conn.on(
           'close',
@@ -43,15 +34,15 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
           }
         );
         setError( undefined );
-        return setConnection( conn );
+        setStatus( 'READY' );
+        connectionRef.current = conn;
+        return;
 
       }
       conn.close();
-      setLoading( false );
 
     },
-    [ connection,
-      handleConnectionClosed ]
+    []
   );
   useEffect(
     () => {
@@ -84,6 +75,10 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         handlePeerOpen
       );
       peer.on(
+        'error',
+        console.error
+      );
+      peer.on(
         'connection',
         handleConnection
       );
@@ -97,10 +92,6 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
           'connection',
           handleConnection
         );
-        connection?.removeListener(
-          'close',
-          handleConnectionClosed
-        );
 
       };
       function handlePeerOpen ( peerId: string ): void {
@@ -111,14 +102,13 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       }
 
     },
-    [ connection,
-      onOpen ]
+    [ onOpen ]
   );
 
   const { current: peer } = peerRef;
 
 
-  function connect ( peerId:string ) {
+  const connect = ( peerId:string ) => {
 
     setError( undefined );
     if ( peer.open ) {
@@ -139,7 +129,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         }
       );
 
-      setLoading( true );
+      setStatus( 'LOADING' );
       conn.on(
         'error',
         ( err ) => console.error( err )
@@ -159,7 +149,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
           if ( tries === MAX_RETRIES ) {
 
             setError( 'Peer does not exist or already in a game' );
-            setLoading( false );
+            setStatus( 'DISCONNECTED' );
             conn.close();
             return clearInterval( interval );
 
@@ -172,9 +162,10 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
     }
 
-  }
-  function disconnect ( ) {
+  };
+  const disconnect = ( ) => {
 
+    const { current: connection } = connectionRef;
     if ( connection?.open ) {
 
       return connection?.close();
@@ -182,16 +173,56 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     }
     handleConnectionClosed();
 
-  }
+  };
+  const sendMessage = ( message:GameMessage ) => {
 
+    if ( connectionRef.current === null ) {
+
+      throw new Error( 'Tried to send a message on non-existnet connection' );
+
+    }
+    connectionRef.current.send( message );
+
+  };
+  const addDataConnectionEventListener = ( listener:GameEventListener ) => {
+
+    const { current: connection } = connectionRef;
+    if ( connection === null ) {
+
+      throw new Error( 'Tried to add a listener to non-existnet connection' );
+
+    }
+    connection.on(
+      'data',
+      listener
+    );
+    return () => {
+
+      connection.removeListener(
+        'data',
+        listener
+      );
+
+    };
+
+
+  };
   return {
     id,
     error,
-    connection,
-    peer,
     loading,
     connect,
-    disconnect
+    disconnect,
+    sendMessage,
+    addDataConnectionEventListener
   };
+  function handleConnectionClosed ( ) {
+
+    setError( 'Player left' );
+    setStatus( 'DISCONNECTED' );
+    connectionRef.current = null;
+
+  }
+
 
 }

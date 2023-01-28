@@ -127,12 +127,12 @@ export function ConnectionPage ( {
   connect,
   id,
   connected,
-  loading,
+  status,
   disconnectReason
 }:{
   id: string | undefined, connect: ( peerId: string ) =>void;
   connected:boolean
-  loading:boolean
+  status:ConnectionStatus;
   disconnectReason:string|undefined;
 } ) {
 
@@ -169,7 +169,8 @@ export function ConnectionPage ( {
     [ connected ]
   );
   const sameId = peerId === id;
-  const disableButton = !peerId || connected || loading || sameId;
+  const isLoading = status !== 'DISCONNECTED';
+  const disableButton = !peerId || connected || isLoading || sameId;
   function copyId () {
 
     navigator.clipboard.writeText( id as string );
@@ -222,7 +223,7 @@ export function ConnectionPage ( {
       }}
     >
       <input
-        disabled={loading}
+        disabled={isLoading}
         value={peerId}
         placeholder="Opponent's id"
         title={peerId}
@@ -242,14 +243,14 @@ export function ConnectionPage ( {
 
         onClick={attemptConnection }
       >
-        {loading
+        {isLoading
           ? 'loading'
           : 'CONNECT ->' }
       </button>
     </div>
     {sameId && 'This is your own id, you cant connect to yourself!'}
 
-    {!loading && disconnectReason && <span>
+    {!isLoading && disconnectReason && <span>
       Disconnected due to: {disconnectReason}
     </span>}
   </Root>;

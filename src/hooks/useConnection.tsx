@@ -5,13 +5,11 @@ import { usePeer } from './usePeer';
 import { ConnectionPage } from '../components/ConnectionPage';
 
 
-type EventListener = ( ( data:unknown|GameMessage )=>void )
-
 interface Connection {
   sendMessage( message:GameMessage ):void
 
   /** returns a cleanup function */
-  addDataConnectionEventListener( listener:EventListener ):()=>void;
+  addDataConnectionEventListener( listener:GameEventListener ):()=>void;
   disconnect():void;
 }
 
@@ -34,54 +32,24 @@ export function useConnectionContext ( ) {
 export function ConnectionProvider ( { children }: {children:ReactNode|ReactNode[]} ) {
 
   const {
-    connection,
     id,
     connect,
     error,
-    loading,
-    disconnect
+    loading: status,
+    disconnect,
+    addDataConnectionEventListener,
+    sendMessage
   } = usePeer( { onOpen: console.log } );
-  function sendMessage ( message:GameMessage ) {
 
-    if ( connection === null ) {
-
-      throw new Error( 'Tried to send a message on non-existnet connection' );
-
-    }
-    connection.send( message );
-
-  }
-  function addDataConnectionEventListener ( listener:EventListener ) {
-
-    if ( connection === null ) {
-
-      throw new Error( 'Tried to add a listener to non-existnet connection' );
-
-    }
-    connection.on(
-      'data',
-      listener
-    );
-    return () => {
-
-      connection.removeListener(
-        'data',
-        listener
-      );
-
-    };
-
-
-  }
-  const gameReady = connection !== null && !error;
+  const gameReady = status === 'READY' && !error;
   return <>
 
     <ConnectionPage
       id={id}
       connect={connect}
-      connected={!!connection}
+      connected={status === 'READY'}
       disconnectReason={error}
-      loading={loading}
+      status={status}
     />
     {gameReady && <connectionContext.Provider value={{
       sendMessage,
