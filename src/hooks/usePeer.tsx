@@ -19,11 +19,24 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
       if ( connectionRef.current === null ) {
 
+        // run on 0 timeout just so it runs after this function finishes
+        setTimeout(
+          () => {
+
+            if ( !conn.open ) {
+
+              handleConnectionClosed( 'Peer failed to connect' );
+
+            }
+
+
+          },
+          0
+        );
         conn.on(
           'close',
           handleConnectionClosed
         );
-
         conn.on(
           'error',
           ( error ) => {
@@ -216,9 +229,9 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     sendMessage,
     addDataConnectionEventListener
   };
-  function handleConnectionClosed ( ) {
+  function handleConnectionClosed ( reason:string|undefined = 'Player left' ) {
 
-    setError( 'Player left' );
+    setError( reason );
     setStatus( 'DISCONNECTED' );
     connectionRef.current = null;
 
