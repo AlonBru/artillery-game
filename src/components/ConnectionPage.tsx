@@ -169,7 +169,7 @@ export function ConnectionPage ( {
     [ connected ]
   );
   const sameId = peerId === id;
-  const disabled = !peerId || connected || loading || sameId;
+  const disableButton = !peerId || connected || loading || sameId;
   function copyId () {
 
     navigator.clipboard.writeText( id as string );
@@ -222,7 +222,7 @@ export function ConnectionPage ( {
       }}
     >
       <input
-        disabled={disabled}
+        disabled={loading}
         value={peerId}
         placeholder="Opponent's id"
         title={peerId}
@@ -238,7 +238,7 @@ export function ConnectionPage ( {
         }}
       />
       <button
-        disabled={disabled}
+        disabled={disableButton}
 
         onClick={attemptConnection }
       >
