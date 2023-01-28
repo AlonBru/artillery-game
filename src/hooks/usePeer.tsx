@@ -3,7 +3,7 @@ import {
   useCallback, useEffect, useRef, useState
 } from 'react';
 
-const MAX_RETRIES = 10;
+const MAX_RETRIES = 30;
 const RETRY_INTERVAL_MS = 100;
 
 export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
