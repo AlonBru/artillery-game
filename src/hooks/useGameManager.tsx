@@ -71,7 +71,7 @@ export function useGameLogic ():GameLogic {
 export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'div'>, 'children'> ) {
 
 
-  const conn = useConnectionContext();
+  const { addDataConnectionEventListener, sendMessage: send } = useConnectionContext();
   const playerPositionRef = useRef<Vector2 | null>( null );
   const [ loaded, setLoaded ] = useState<boolean>( true );
   const lastKnown = useLastKnownPosition( );
@@ -181,7 +181,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
       if ( hit ) {
 
-        conn.send( {
+        send( {
           type: 'hit',
           data: playerPositionRef.current as Vector2
         } );
@@ -202,48 +202,39 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     }
   );
   useEffect(
-    () => {
+    () => addDataConnectionEventListener(
 
-      function handleMessage ( message:GameMessage ) {
+      ( data:unknown ) => {
 
-        switch ( message.type ) {
+        if ( ( data as GameMessage )?.type ) {
 
-          case 'hit':
-            dispatchGameAction( {
-              own: false,
-              move: {
-                type: 'defeat',
-                target: message.data
-              }
-            } );
-            break;
-          case 'command':
-            dispatchGameAction( {
-              own: false,
-              move: message.data as FireCommand
-            } );
-            break;
-          default:
-            break;
+          const message = data as GameMessage;
+          switch ( message.type ) {
+
+            case 'hit':
+              dispatchGameAction( {
+                own: false,
+                move: {
+                  type: 'defeat',
+                  target: message.data
+                }
+              } );
+              break;
+            case 'command':
+              dispatchGameAction( {
+                own: false,
+                move: message.data as FireCommand
+              } );
+              break;
+            default:
+              break;
+
+          }
 
         }
 
       }
-      conn.on(
-        'data',
-        ( data ) => {
-
-          handleMessage( data as GameMessage );
-
-        }
-      );
-      return () => {
-
-        conn.removeListener( 'data' );
-
-      };
-
-    },
+    ),
     []
   );
 
@@ -256,7 +247,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
   function sendCommand ( command: Command ) {
 
 
-    conn.send( {
+    send( {
       type: 'command',
       data: command.type === 'FIRE'
         ? command
@@ -383,7 +374,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
         type: 'position',
         data: playerPositionRef.current as Vector2
       };
-    conn.send( message );
+    send( message );
     return { hit: playerHit,
       uiHandled: false };
 

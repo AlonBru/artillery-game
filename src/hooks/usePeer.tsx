@@ -160,6 +160,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
             setError( 'Peer does not exist or already in a game' );
             setLoading( false );
+            conn.close();
             return clearInterval( interval );
 
           }
@@ -172,6 +173,16 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     }
 
   }
+  function disconnect ( ) {
+
+    if ( connection?.open ) {
+
+      return connection?.close();
+
+    }
+    handleConnectionClosed();
+
+  }
 
   return {
     id,
@@ -179,7 +190,8 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
     connection,
     peer,
     loading,
-    connect
+    connect,
+    disconnect
   };
 
 }

@@ -208,11 +208,7 @@ function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
     <Footer>
 
       <button
-        onClick={() => {
-
-          connection?.close();
-
-        }}
+        onClick={connection.disconnect}
 
       >
       leave game

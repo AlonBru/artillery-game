@@ -3,12 +3,11 @@ import { useConnectionContext } from './useConnection';
 
 export function useLastKnownPosition () {
 
-  const conn = useConnectionContext();
+  const { addDataConnectionEventListener } = useConnectionContext();
   const [ lastKnownPosition, setLastKnown ] = useState<Vector2 | null>( null );
 
-  useEffect( () => {
-
-    function handlePositionMessage ( data: unknown ) {
+  useEffect( () => addDataConnectionEventListener(
+    ( data: unknown ) => {
 
       if ( ( data as GameMessage ).type === 'position' ) {
 
@@ -17,20 +16,7 @@ export function useLastKnownPosition () {
       }
 
     }
-    conn.addListener(
-      'data',
-      handlePositionMessage
-    );
-    return () => {
-
-      conn.removeListener(
-        'data',
-        handlePositionMessage
-      );
-
-    };
-
-  } );
+  ) );
   return lastKnownPosition;
 
 }
