@@ -1,15 +1,21 @@
-import { createContext, ReactNode, useContext } from 'react';
-import { DataConnection } from 'peerjs';
+import {
+  createContext, ReactNode, useContext
+} from 'react';
 import { usePeer } from './usePeer';
 import { ConnectionPage } from '../components/ConnectionPage';
 
-interface Connection extends DataConnection{
-  send( message:GameMessage ):void
+
+interface Connection {
+  sendMessage( message:GameMessage ):void
+
+  /** returns a cleanup function */
+  addDataConnectionEventListener( listener:GameEventListener ):()=>void;
+  disconnect():void;
 }
 
 const connectionContext = createContext<Connection|null>( null );
 
-export function useConnectionContext () {
+export function useConnectionContext ( ) {
 
   const context = useContext( connectionContext );
   if ( !context ) {
@@ -17,30 +23,39 @@ export function useConnectionContext () {
     throw new Error( 'trying touseConnection without provider' );
 
   }
+
   return context;
 
 }
 
+
 export function ConnectionProvider ( { children }: {children:ReactNode|ReactNode[]} ) {
 
   const {
-    connection,
     id,
     connect,
     error,
-    loading
+    loading: status,
+    disconnect,
+    addDataConnectionEventListener,
+    sendMessage
   } = usePeer( { onOpen: console.log } );
 
-  const gameReady = connection !== null && !error;
+  const gameReady = status === 'READY' && !error;
   return <>
+
     <ConnectionPage
       id={id}
       connect={connect}
-      connected={!!connection}
+      connected={status === 'READY'}
       disconnectReason={error}
-      loading={loading}
+      status={status}
     />
-    {gameReady && <connectionContext.Provider value={connection} >
+    {gameReady && <connectionContext.Provider value={{
+      sendMessage,
+      addDataConnectionEventListener,
+      disconnect
+    }} >
       {children}
     </connectionContext.Provider>
     }

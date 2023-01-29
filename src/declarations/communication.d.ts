@@ -16,3 +16,5 @@ type CommandMessage = {
 }
 
 type GameMessage = CommandMessage|HitMessage|PositionMessage;
+type ConnectionStatus = 'READY' | 'LOADING' | 'DISCONNECTED';
+type GameEventListener = ( ( data:unknown|GameMessage )=>void )
