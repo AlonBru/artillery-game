@@ -9,9 +9,8 @@ import { getFreshBoard } from '../helpers/board';
 import { BOARD_SIZE } from '../constants';
 import { useConnectionContext } from './useConnection';
 import { useLastKnownPosition } from './useLastKnownPosition';
-import { Modal } from '../components/Modal';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
-
+import { RematchManager } from './RematchManager';
 
 type GameLogic = {
   sendCommand( move:Command ):void;
@@ -22,6 +21,7 @@ type GameLogic = {
   playerPosition: Vector2|null;
   lastKnown: Vector2|null;
   endGame:false|EndGameStatus;
+  resetGame():void;
 };
 type PlayerAction = {
   own:true,
@@ -41,7 +41,7 @@ type EndGameAction = {
 
 };
 
-type Action = PlayerAction|PeerAction|EndGameAction;
+type Action = PlayerAction|PeerAction|EndGameAction|'RESET';
 
 const gameLogicContext = createContext<GameLogic|null>( null );
 const endgameStates:Readonly<EndGameStatus[]> = [ 'DEFEAT',
@@ -76,64 +76,75 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
   const { addDataConnectionEventListener, sendMessage: send } = useConnectionContext();
   const playerPositionRef = useRef<Vector2 | null>( null );
   const [ loaded, setLoaded ] = useState<boolean>( true );
-  const lastKnown = useLastKnownPosition( );
+
+  const [ board, dispatchBoard ] = useReducer<Reducer<Board, BoardChange[]|'RESET'>>(
+    ( boardState, actions ) => {
+
+      if ( actions === 'RESET' ) {
+
+        return getFreshBoard( BOARD_SIZE );
+
+      }
+      return actions.reduce<Board>(
+        ( board, command ) => {
+
+          const { type, target: { x, y } } = command;
+
+          switch ( type ) {
+
+            case 'defeat':
+              board[x][y] = 'DESTROYED';
+              break;
+
+            case 'INITIAL':
+
+              board[x][y] = 'PLAYER';
+              playerPositionRef.current = {
+                x,
+                y,
+              };
+
+              break;
+            case 'MOVE':
+
+              board[x][y] = 'PLAYER';
+
+              break;
+            case 'FIRE':
+
+              board[x][y] = hasHitPlayer(
+                x,
+                y
+              )
+                ? 'DESTROYED'
+                : 'CRATER';
+
+              break;
+
+            default:
+              break;
+
+          }
+
+          return board;
 
 
-  const [ board, dispatchBoard ] = useReducer<Reducer<Board, BoardChange[]>>(
-    ( boardState, actions ) => actions.reduce<Board>(
-      ( board, command ) => {
+        },
+        [ ...boardState ]
+      );
 
-        const { type, target: { x, y } } = command;
-
-        switch ( type ) {
-
-          case 'defeat':
-            board[x][y] = 'DESTROYED';
-            break;
-
-          case 'INITIAL':
-
-            board[x][y] = 'PLAYER';
-            playerPositionRef.current = {
-              x,
-              y,
-            };
-
-            break;
-          case 'MOVE':
-
-            board[x][y] = 'PLAYER';
-
-            break;
-          case 'FIRE':
-
-            board[x][y] = hasHitPlayer(
-              x,
-              y
-            )
-              ? 'DESTROYED'
-              : 'CRATER';
-
-            break;
-
-          default:
-            break;
-
-        }
-
-        return board;
-
-
-      },
-      [ ...boardState ]
-    ),
+    },
     getFreshBoard( BOARD_SIZE )
   );
-
 
   const [ { status }, dispatchGameAction ] = useReducer<Reducer<GameState, Action>>(
     ( { status: state, moves }, action ) => {
 
+      if ( action === 'RESET' ) {
+
+        return handleGameReset( );
+
+      }
       if ( isEndGameAction( action ) ) {
 
 
@@ -200,6 +211,9 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       moves: null
     }
   );
+  const lastKnown = useLastKnownPosition( );
+
+
   useEffect(
     () => addDataConnectionEventListener( ( message ) => {
 
@@ -230,7 +244,8 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     []
   );
 
-  function isEndGameAction ( action: Action ):action is EndGameAction {
+
+  function isEndGameAction ( action: Exclude<Action, 'RESET'> ):action is EndGameAction {
 
     return action.move?.type === 'defeat';
 
@@ -257,10 +272,20 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
     playerPosition: playerPositionRef.current,
     lastKnown,
-    endGame: isStatusEndgame( status ) && status
+    endGame: isStatusEndgame( status ) && status,
+    resetGame
   }}>
+    <RematchManager
+      reset={resetGame}
+    />
     {children}
   </gameLogicContext.Provider>;
+  function resetGame () {
+
+    dispatchGameAction( 'RESET' );
+
+  }
+
   function isStatusEndgame ( status:GameStatus ): status is EndGameStatus {
 
     return endgameStates.includes( status as EndGameStatus );
@@ -271,6 +296,17 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
     return x === playerPositionRef.current?.x &&
       y === playerPositionRef.current?.y;
+
+  }
+  function handleGameReset ( ) {
+
+    setLoaded( true );
+    playerPositionRef.current = null;
+    dispatchBoard( 'RESET' );
+    return {
+      moves: {},
+      status: 'IDLE' as const
+    };
 
   }
   function handleOwnMove ( currentsState: GameStatus ): GameStatus {
@@ -350,7 +386,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       x,
       y
     );
-    const message:GameMessage = playerHit
+    const message = playerHit
       ? new HitMessage( {
         x,
         y
@@ -379,3 +415,4 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
 
 }
+

@@ -1,11 +1,13 @@
 import {
-  Dispatch, DispatchWithoutAction, ReactNode, SetStateAction, useState
+  Dispatch, DispatchWithoutAction, ReactNode, SetStateAction, useEffect, useState
 } from 'react';
 import styled from 'styled-components';
+import { RematchMessage } from '../helpers/Message';
 import { useConnectionContext } from '../hooks/useConnection';
 import { useGameLogic } from '../hooks/useGameManager';
 import { CommandSelector } from './CommandSelector';
 import { InstructionsMaker } from './InstructionsMaker';
+import { Modal } from './Modal';
 import { GreenScreenDisplay } from './styled';
 
 
@@ -171,6 +173,7 @@ type Props = {
 function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
 
   const connection = useConnectionContext();
+  const { endGame } = useGameLogic();
 
   return <BasePanel>
     <Screw
@@ -207,6 +210,7 @@ function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
     </Main>
     <Footer>
 
+      {endGame && <RematchButton/>}
       <button
         onClick={connection.disconnect}
 
@@ -217,6 +221,7 @@ function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
   </BasePanel>;
 
 }
+
 
 export function CommandPanel ( {
   commandMode,
@@ -391,4 +396,44 @@ function AcceptButton ( { canAct, onClick }:{onClick: DispatchWithoutAction, can
   </div>;
 
 }
+function RematchButton (): JSX.Element {
 
+  const connection = useConnectionContext();
+  const { resetGame } = useGameLogic();
+  const [ requesting, setRequesting ] = useState( false );
+  useEffect(
+    () => connection.addDataConnectionEventListener( ( message ) => {
+
+      if ( message.type === 'rematch' && message.data === 'accept' ) {
+
+        setRequesting( false );
+        resetGame();
+
+      }
+
+    } ),
+    [ connection ]
+  );
+  return <button
+    onClick={() => {
+
+      setRequesting( true );
+      connection.sendMessage( new RematchMessage( 'request' ) );
+
+    } }
+
+  >
+    rematch?
+    <Modal
+      show={requesting}
+    >
+      requesting a rematch...
+      <button
+        onClick={connection.disconnect}
+      >
+      leave
+      </button>
+    </Modal>
+  </button>;
+
+}

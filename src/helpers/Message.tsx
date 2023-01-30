@@ -63,3 +63,19 @@ export class PositionMessage extends GameMessageClass implements IPositionMessag
   }
 
 }
+export class RematchMessage extends GameMessageClass implements IRematchMessage {
+
+  type:'rematch';
+
+  data:IRematchMessage['data'];
+
+  constructor ( data:IRematchMessage['data'] ) {
+
+    const type = 'rematch';
+    super( type );
+    this.type = type;
+    this.data = data;
+
+  }
+
+}

@@ -5,7 +5,7 @@
  */
 abstract interface _IGameMessage{
   gameMessage:true;
-  type: ( IPositionMessage|IHitMessage|ICommandMessage )['type'];
+  type: GameMessage['type'];
 }
 interface IPositionMessage extends _IGameMessage {
   type:'position';
@@ -23,9 +23,17 @@ interface ICommandMessage extends _IGameMessage {
   type:'command';
   data:FireCommand|null;
 }
+interface IRematchMessage extends _IGameMessage {
+  type:'rematch';
+  data:'request'|'accept'
+}
 
 /** Includes all message types  */
-type GameMessage = ICommandMessage | IHitMessage | IPositionMessage;
+type GameMessage = ICommandMessage
+| IHitMessage
+| IPositionMessage
+| IRematchMessage
+;
 
 type ConnectionStatus = 'READY' | 'LOADING' | 'DISCONNECTED';
 type GameEventListener = ( message:GameMessage )=>void

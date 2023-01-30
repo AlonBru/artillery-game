@@ -67,7 +67,7 @@ export function BoardCell ( {
 
         if ( !playerPosition ) {
 
-          throw new Error( 'tried to move without placing your piece' );
+          return false;
 
         }
         if ( board[x][y] === 'CRATER' ) {

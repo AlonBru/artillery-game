@@ -25,10 +25,23 @@ export function GameUI () {
     sendCommand: sendEvent,
     playerPosition,
     board,
-    awaitingPlayerInput
+    awaitingPlayerInput,
+    endGame
   } = useGameLogic();
   const [ cursor, setCursor ] = useState<Vector2 | null>( null );
   const [ commandMode, setCommandMode ] = useState<CommandMode>( 'INITIAL' );
+  useEffect(
+    () => {
+
+      if ( !endGame ) {
+
+        setCommandMode( 'INITIAL' );
+
+      }
+
+    },
+    [ endGame ]
+  );
   useEffect(
     () => {
 
