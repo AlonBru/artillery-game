@@ -1,8 +1,17 @@
-type PositionMessage = {
+/* eslint-disable no-use-before-define */
+
+/**
+ * Used for extending only
+ */
+abstract interface _IGameMessage{
+  gameMessage:true;
+  type: ( IPositionMessage|IHitMessage|ICommandMessage )['type'];
+}
+interface IPositionMessage extends _IGameMessage {
   type:'position';
   data: Vector2;
 }
-type HitMessage = {
+interface IHitMessage extends _IGameMessage {
   type:'hit';
   data:Vector2;
 }
@@ -10,11 +19,13 @@ type HitMessage = {
 /**
  * Should only receive fire commands from peer, other commands are not specified
  */
-type CommandMessage = {
+interface ICommandMessage extends _IGameMessage {
   type:'command';
   data:FireCommand|null;
 }
 
-type GameMessage = CommandMessage|HitMessage|PositionMessage;
+/** Includes all message types  */
+type GameMessage = ICommandMessage | IHitMessage | IPositionMessage;
+
 type ConnectionStatus = 'READY' | 'LOADING' | 'DISCONNECTED';
-type GameEventListener = ( ( data:unknown|GameMessage )=>void )
+type GameEventListener = ( message:GameMessage )=>void

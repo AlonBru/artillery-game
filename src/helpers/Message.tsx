@@ -1,0 +1,65 @@
+
+
+abstract class GameMessageClass implements _IGameMessage {
+
+  gameMessage = true as const;
+
+  type:GameMessage['type'];
+
+  constructor ( type:GameMessage['type'] ) {
+
+    this.type = type;
+
+  }
+
+}
+export class HitMessage extends GameMessageClass implements IHitMessage {
+
+  type:'hit';
+
+  data:Vector2;
+
+  constructor ( data:Vector2 ) {
+
+    const type = 'hit';
+    super( type );
+    this.type = type;
+    this.data = data;
+
+  }
+
+}
+export class CommandMessage extends GameMessageClass implements ICommandMessage {
+
+  type:'command';
+
+  data:FireCommand|null;
+
+  constructor ( data:FireCommand|null ) {
+
+    const type = 'command' as const;
+    super( type );
+    this.type = type;
+
+    this.data = data;
+
+  }
+
+}
+export class PositionMessage extends GameMessageClass implements IPositionMessage {
+
+  type :'position';
+
+  data:Vector2;
+
+  constructor ( data:Vector2 ) {
+
+    const type = 'position' as const;
+
+    super( type );
+    this.type = type;
+    this.data = data;
+
+  }
+
+}

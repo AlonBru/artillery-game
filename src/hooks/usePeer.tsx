@@ -205,15 +205,24 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       throw new Error( 'Tried to add a listener to non-existnet connection' );
 
     }
+    function handleMessage ( data: unknown|GameMessage ) {
+
+      if ( isGameMessage( data ) ) {
+
+        listener( data );
+
+      }
+
+    }
     connection.on(
       'data',
-      listener
+      handleMessage
     );
     return () => {
 
       connection.removeListener(
         'data',
-        listener
+        handleMessage
       );
 
     };
@@ -237,5 +246,10 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   }
 
+
+}
+function isGameMessage ( data:unknown|GameMessage ):data is GameMessage {
+
+  return ( data as GameMessage )?.gameMessage;
 
 }

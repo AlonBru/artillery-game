@@ -9,6 +9,8 @@ import { getFreshBoard } from '../helpers/board';
 import { BOARD_SIZE } from '../constants';
 import { useConnectionContext } from './useConnection';
 import { useLastKnownPosition } from './useLastKnownPosition';
+import { Modal } from '../components/Modal';
+import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 
 
 type GameLogic = {
@@ -181,10 +183,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
       if ( hit ) {
 
-        send( {
-          type: 'hit',
-          data: playerPositionRef.current as Vector2
-        } );
+        send( new HitMessage( playerPositionRef.current as Vector2 ) );
         return { status: 'DEFEAT',
           moves: null };
 
@@ -202,39 +201,32 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     }
   );
   useEffect(
-    () => addDataConnectionEventListener(
+    () => addDataConnectionEventListener( ( message ) => {
 
-      ( data:unknown ) => {
 
-        if ( ( data as GameMessage )?.type ) {
+      switch ( message.type ) {
 
-          const message = data as GameMessage;
-          switch ( message.type ) {
-
-            case 'hit':
-              dispatchGameAction( {
-                own: false,
-                move: {
-                  type: 'defeat',
-                  target: message.data
-                }
-              } );
-              break;
-            case 'command':
-              dispatchGameAction( {
-                own: false,
-                move: message.data as FireCommand
-              } );
-              break;
-            default:
-              break;
-
-          }
-
-        }
+        case 'hit':
+          dispatchGameAction( {
+            own: false,
+            move: {
+              type: 'defeat',
+              target: message.data
+            }
+          } );
+          break;
+        case 'command':
+          dispatchGameAction( {
+            own: false,
+            move: message.data as FireCommand
+          } );
+          break;
+        default:
+          break;
 
       }
-    ),
+
+    } ),
     []
   );
 
@@ -246,13 +238,9 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
   function sendCommand ( command: Command ) {
 
-
-    send( {
-      type: 'command',
-      data: command.type === 'FIRE'
-        ? command
-        : null
-    } );
+    send( new CommandMessage( command.type === 'FIRE'
+      ? command
+      : null ) );
 
     dispatchGameAction( {
       own: true,
@@ -363,17 +351,11 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       y
     );
     const message:GameMessage = playerHit
-      ? {
-        type: 'hit',
-        data: {
-          x,
-          y
-        }
-      }
-      : {
-        type: 'position',
-        data: playerPositionRef.current as Vector2
-      };
+      ? new HitMessage( {
+        x,
+        y
+      } )
+      : new PositionMessage( playerPositionRef.current as Vector2 );
     send( message );
     return { hit: playerHit,
       uiHandled: false };

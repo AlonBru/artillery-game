@@ -6,17 +6,17 @@ export function useLastKnownPosition () {
   const { addDataConnectionEventListener } = useConnectionContext();
   const [ lastKnownPosition, setLastKnown ] = useState<Vector2 | null>( null );
 
-  useEffect( () => addDataConnectionEventListener(
-    ( data: unknown ) => {
+  useEffect(
+    () => addDataConnectionEventListener( ( data ) => {
 
-      if ( ( data as GameMessage ).type === 'position' ) {
+      if ( data.type === 'position' ) {
 
-        setLastKnown( ( data as PositionMessage ).data );
+        setLastKnown( ( data as IPositionMessage ).data );
 
       }
 
-    }
-  ) );
+    } )
+  );
   return lastKnownPosition;
 
 }
