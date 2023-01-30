@@ -8,7 +8,6 @@ import {
 import { getFreshBoard } from '../helpers/board';
 import { BOARD_SIZE } from '../constants';
 import { useConnectionContext } from './useConnection';
-import { useLastKnownPosition } from './useLastKnownPosition';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 import { RematchManager } from './RematchManager';
 
@@ -19,7 +18,6 @@ type GameLogic = {
   loaded:boolean;
   awaitingPlayerInput:boolean;
   playerPosition: Vector2|null;
-  lastKnown: Vector2|null;
   endGame:false|EndGameStatus;
   resetGame():void;
 };
@@ -211,7 +209,6 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
       moves: null
     }
   );
-  const lastKnown = useLastKnownPosition( );
 
 
   useEffect(
@@ -271,7 +268,6 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
     loaded,
     awaitingPlayerInput: status === 'IDLE' || status === 'RECEIVED',
     playerPosition: playerPositionRef.current,
-    lastKnown,
     endGame: isStatusEndgame( status ) && status,
     resetGame
   }}>

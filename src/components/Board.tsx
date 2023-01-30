@@ -1,8 +1,9 @@
 import {
-  SetStateAction, Dispatch, DispatchWithoutAction, ReactNode
+  SetStateAction, Dispatch, DispatchWithoutAction
 } from 'react';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
+import { useLastKnownPosition } from '../hooks/useLastKnownPosition';
 import { BoardCell } from './BoardCell';
 import { BoardColumn, GreenScreenDisplay } from './styled';
 
@@ -319,7 +320,8 @@ export function Board ( {
   dispatch,
 }: BoardProps ) {
 
-  const { lastKnown, awaitingPlayerInput } = useGameLogic();
+  const { awaitingPlayerInput } = useGameLogic();
+  const lastKnown = useLastKnownPosition();
   function clearCursor () {
 
     if ( !awaitingPlayerInput ) {
