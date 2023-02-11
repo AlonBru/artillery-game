@@ -19,20 +19,6 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
       if ( connectionRef.current === null ) {
 
-        // run on 0 timeout just so it runs after this function finishes
-        setTimeout(
-          () => {
-
-            if ( !conn.open ) {
-
-              handleConnectionClosed( 'Peer failed to connect' );
-
-            }
-
-
-          },
-          0
-        );
         conn.on(
           'close',
           handleConnectionClosed
@@ -49,6 +35,21 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         setError( undefined );
         setStatus( 'READY' );
         connectionRef.current = conn;
+
+        // check if the connection wasnt closed by the peer, sometimes happens without firing close event
+        setTimeout(
+          () => {
+
+            if ( !conn.open ) {
+
+              handleConnectionClosed( 'Peer failed to connect' );
+
+            }
+
+
+          },
+          3000
+        );
         return;
 
       }
