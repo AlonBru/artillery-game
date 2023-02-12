@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import {
+  Dispatch, SetStateAction, useEffect, useState
+} from 'react';
 import styled from 'styled-components';
+import { LightupButton } from './LightupButton';
 
 const Root = styled.div`
   display: grid;
@@ -175,21 +178,6 @@ const PageContent = styled.article`
   }
   
 `;
-const Button = styled.button`
-  background: #222;
-  border: 2px outset #222;
-  font-family: monospace;
-  font-size: 1em;
-  color: #eee;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  line-height: 24px;
-  :hover:not(:disabled),:focus{
-    cursor:pointer;
-    filter: brightness(1.5);
-  }
-`;
 
 const rules = [
   'select deploy sector to begin',
@@ -205,7 +193,9 @@ export function InstructionsMaker () {
     <InstructionPrinter
       show={showPaper}
     >
-      <Page show={showPaper}
+      <Page
+        title="tear away"
+        show={showPaper}
         tabIndex={showPaper
           ? 0
           : undefined}
@@ -245,14 +235,78 @@ export function InstructionsMaker () {
 
       </Page>
     </InstructionPrinter>
-    <Button
-      onClick={() => setShow( true )}
-      title="instructions"
-      disabled={showPaper}
-    >
-      i
-    </Button>
+    <IndsructionsButton
+      setShow={setShow}
+      showPaper={showPaper}
+    />
   </Root>;
 
 
 }
+function IndsructionsButton ( { setShow, showPaper }:{
+  setShow:Dispatch<SetStateAction<boolean|undefined>>,
+  showPaper: boolean | undefined
+} ) {
+
+  const [ firstTime, setFirstTime ] = useState<boolean>( true );
+  const [ lighted, setLighted ] = useState<boolean>( true );
+
+  // show a blinking light if the instructions were never opened
+  useEffect(
+    () => {
+
+      if ( firstTime ) {
+
+        const interval = setInterval(
+          () => {
+
+            setLighted( true );
+            setTimeout(
+              () => {
+
+                setLighted( false );
+
+              },
+              400
+            );
+
+          },
+          600
+        );
+        return () => {
+
+          setLighted( false );
+          clearInterval( interval );
+
+        };
+
+      }
+
+    },
+    [ firstTime ]
+  );
+
+  return <LightupButton
+    onClick={() => {
+
+      setShow( true );
+      if ( firstTime ) {
+
+        setFirstTime( false );
+
+      }
+
+    } }
+    title="get instructions"
+    disabled={showPaper}
+    size={30}
+    lighted={firstTime
+      ? lighted
+      : !showPaper
+    }
+  >
+    i
+  </LightupButton>;
+
+}
+
