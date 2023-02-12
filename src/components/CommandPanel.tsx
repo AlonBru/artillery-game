@@ -213,8 +213,10 @@ export function CommandPanel ( {
         disabled={!awaitingPlayerInput }
       />
       <LightupButton
+        label={'COMMAND'}
         onClick={dispatch}
-        canAct={false}
+        lighted={false}
+        disabled={true}
 
       />
     </PanelBase>;
@@ -277,7 +279,9 @@ export function CommandPanel ( {
       disabled={!awaitingPlayerInput }
     />
     <LightupButton
-      canAct={canAct}
+      label={'COMMAND'}
+      lighted={canAct}
+      disabled={!canAct}
       onClick={dispatch}
     />
   </PanelBase>;
