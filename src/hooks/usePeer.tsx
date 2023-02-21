@@ -11,9 +11,11 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   const peerRef = useRef<Peer>( new Peer() );
   const connectionRef = useRef < DataConnection|null>( null );
-  const [ id, setId ] = useState<string>( );
-  const [ loading, setStatus ] = useState<ConnectionStatus>( 'DISCONNECTED' );
+  const [ userSetId, setId ] = useState<string>( );
+  const [ serverId, setServerId ] = useState<string>( );
+  const [ connectionStatus, setConnectionStatus ] = useState<ConnectionStatus>( 'DISCONNECTED' );
   const [ error, setError ] = useState<string>( );
+
   const handleConnection = useCallback(
     ( conn:DataConnection ) => {
 
@@ -33,7 +35,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
           }
         );
         setError( undefined );
-        setStatus( 'READY' );
+        setConnectionStatus( 'READY' );
         connectionRef.current = conn;
 
         // check if the connection wasnt closed by the peer, sometimes happens without firing close event
@@ -64,7 +66,16 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       const { current: peer } = peerRef;
       if ( !peer || peer.destroyed ) {
 
-        peerRef.current = new Peer();
+        if ( !userSetId ) {
+
+          peerRef.current = new Peer();
+
+        } else {
+
+          peerRef.current = new Peer( userSetId );
+          setServerId( undefined );
+
+        }
 
       }
       return () => {
@@ -78,8 +89,8 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       };
 
     },
-    []
-  );
+    /* eslint-disable-next-line function-paren-newline */
+    [ userSetId ] );
   useEffect(
     () => {
 
@@ -110,13 +121,19 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       };
       function handlePeerOpen ( peerId: string ): void {
 
-        setId( peerId );
+        if ( !userSetId ) {
+
+          setServerId( peerId );
+
+        }
         onOpen( peerId );
 
       }
 
     },
-    [ onOpen ]
+    /* eslint-disable-next-line function-paren-newline */
+    [ onOpen,
+      userSetId ]
   );
 
   const { current: peer } = peerRef;
@@ -143,7 +160,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         }
       );
 
-      setStatus( 'LOADING' );
+      setConnectionStatus( 'LOADING' );
       conn.on(
         'error',
         ( err ) => console.error( err )
@@ -163,7 +180,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
           if ( tries === MAX_RETRIES ) {
 
             setError( 'Peer does not exist or already in a game' );
-            setStatus( 'DISCONNECTED' );
+            setConnectionStatus( 'DISCONNECTED' );
             conn.close();
             return clearInterval( interval );
 
@@ -231,18 +248,19 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   };
   return {
-    id,
+    id: userSetId || serverId,
     error,
-    loading,
+    loading: connectionStatus,
     connect,
     disconnect,
     sendMessage,
-    addDataConnectionEventListener
+    addDataConnectionEventListener,
+    setId
   };
   function handleConnectionClosed ( reason:string|undefined = 'Player left' ) {
 
     setError( reason );
-    setStatus( 'DISCONNECTED' );
+    setConnectionStatus( 'DISCONNECTED' );
     connectionRef.current = null;
 
   }
