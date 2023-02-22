@@ -311,6 +311,7 @@ const markerMapper: {
 
 };
 
+export const battleGridId = 'battle-grid';
 export function Board ( {
   commandMode,
   playerPosition,
@@ -334,7 +335,7 @@ export function Board ( {
 
   }
   const Marker = markerMapper[commandMode];
-  return <Screen>
+  return <Screen id={battleGridId}>
     <BoardRoot
       onBlur={( { currentTarget } ) => {
 

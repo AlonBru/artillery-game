@@ -11,6 +11,8 @@ import { LightupButton } from './LightupButton';
 import { Modal } from './Modal';
 import { GreenScreenDisplay } from './styled';
 
+export const commandPanelId = 'command-panel';
+
 
 const BasePanel = styled.aside`
   display: grid;
@@ -127,7 +129,7 @@ function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
   const connection = useConnectionContext();
   const { endGame } = useGameLogic();
 
-  return <BasePanel>
+  return <BasePanel id={commandPanelId}>
     <Screw
       rotate={55}
       style={{
@@ -228,7 +230,7 @@ export function CommandPanel ( {
   awaitingPlayerInput &&
   commandMode === 'RELOAD';
 
-  return <PanelBase>
+  return <PanelBase >
     <CommunticationDisplay>
 
       {endGame

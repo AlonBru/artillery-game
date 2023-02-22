@@ -2,6 +2,8 @@ import {
   Dispatch, SetStateAction, useEffect, useState
 } from 'react';
 import styled from 'styled-components';
+import { battleGridId } from './Board';
+import { commandPanelId } from './CommandPanel';
 import { LightupButton } from './LightupButton';
 
 const Root = styled.div`
@@ -225,12 +227,53 @@ export function InstructionsMaker () {
           objective: eliminate the enemy
           </h3>
           <h4>
+            issue commands using the <u
+              onMouseOver={() => {
+
+                document.getElementById( battleGridId )?.setAttribute(
+                  'style',
+                  'border-color:red;'
+                );
+
+              }}
+              onMouseOut={() => {
+
+                document.getElementById( battleGridId )?.setAttribute(
+                  'style',
+                  ''
+                );
+
+              }}
+            >
+              Battle Grid
+            </u> and the <u
+              onMouseOver={() => {
+
+                document.getElementById( commandPanelId )?.setAttribute(
+                  'style',
+                  'border-color:red;'
+                );
+
+              }}
+              onMouseOut={() => {
+
+                document.getElementById( commandPanelId )?.setAttribute(
+                  'style',
+                  ''
+                );
+
+              }}
+            >
+              Control Panel
+            </u>
+          </h4>
+          <h4>
           instructions:
           </h4>
           <ul>
             {rules.map( ( rule, i ) => <li key={i}>{rule}.</li> )}
           </ul>
-          <span>good luck commander.</span>
+          <span>Good luck commander.</span>
         </PageContent>
 
       </Page>
