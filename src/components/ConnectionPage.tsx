@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IdDisplay } from './IdDisplay';
 
@@ -55,6 +55,21 @@ const GameTitle = styled.h1`
   font-family:top-secret;
   color: #2ac000;
 `;
+const ErrorMessage = styled.span`
+  color: #c03000;
+  font-weight: bold;
+  transition: all .2s;
+`;
+
+type Props = {
+  id: string | undefined;
+  connect: ( peerId: string ) => void;
+  connected: boolean;
+  status: ConnectionStatus;
+  disconnectReason: string | undefined;
+  setId( newId: string ): void;
+  peerError?: string;
+};
 
 export function ConnectionPage ( {
   connect,
@@ -62,14 +77,9 @@ export function ConnectionPage ( {
   connected,
   status,
   disconnectReason,
-  setId
-}:{
-  id: string | undefined, connect: ( peerId: string ) =>void;
-  connected:boolean
-  status:ConnectionStatus;
-  disconnectReason:string|undefined;
-  setId( newId:string ):void;
-} ) {
+  setId,
+  peerError
+}:Props ) {
 
   const [ peerId, setPeerId ] = useState( () => {
 
@@ -77,7 +87,7 @@ export function ConnectionPage ( {
     return searchParams.get( 'peer' ) || '';
 
   } );
-
+  const peerErrorRef = useRef<HTMLSpanElement>( null );
   // auto connect if peerId provided
   useEffect(
     () => {
@@ -112,7 +122,8 @@ export function ConnectionPage ( {
     connected ||
     isLoading ||
     sameId ||
-    isEditing;
+    isEditing ||
+    !!peerError;
 
   return <Root connected={connected} >
     <GameTitle>
@@ -130,8 +141,11 @@ export function ConnectionPage ( {
       cancelEdit={() => setEditing( false )}
       enterEditMode={() => setEditing( true )}
     />
-
-
+    {peerError && <ErrorMessage
+      ref={peerErrorRef}
+    >
+      {peerError}
+    </ErrorMessage>}
     <br />
     Send it to a friend or type in their id to connect: <br />
     <div
@@ -162,7 +176,34 @@ export function ConnectionPage ( {
           ? 'Please finish editing your id'
           : ''}
         disabled={disableButton}
+        onMouseOver={() => {
 
+          if ( peerError ) {
+
+            peerErrorRef.current?.setAttribute(
+              'style',
+              'rotate: 2deg; filter:brightness(1.3);'
+            );
+            setTimeout(
+              () => peerErrorRef.current?.setAttribute(
+                'style',
+                'rotate: -2deg; filter:brightness(1.3);'
+              ),
+              200
+
+            );
+            setTimeout(
+              () => peerErrorRef.current?.setAttribute(
+                'style',
+                'rotate: 0deg;'
+              ),
+              300
+
+            );
+
+          }
+
+        }}
         onClick={attemptConnection }
       >
         {isLoading

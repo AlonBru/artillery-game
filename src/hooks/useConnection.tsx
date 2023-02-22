@@ -38,7 +38,8 @@ export function ConnectionProvider ( { children }: Props ) {
   const {
     id,
     connect,
-    error,
+    connectionError,
+    peerError,
     loading: status,
     disconnect,
     addDataConnectionEventListener,
@@ -46,14 +47,15 @@ export function ConnectionProvider ( { children }: Props ) {
     setId
   } = usePeer( { onOpen: console.log } );
 
-  const gameReady = status === 'READY' && !error;
+  const gameReady = status === 'READY' && !connectionError;
   return <>
 
     <ConnectionPage
       id={id}
       connect={connect}
       connected={status === 'READY'}
-      disconnectReason={error}
+      disconnectReason={connectionError}
+      peerError={peerError}
       status={status}
       setId={setId}
     />

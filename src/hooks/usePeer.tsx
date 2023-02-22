@@ -14,7 +14,8 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
   const [ userSetId, setId ] = useState<string>( );
   const [ serverId, setServerId ] = useState<string>( );
   const [ connectionStatus, setConnectionStatus ] = useState<ConnectionStatus>( 'DISCONNECTED' );
-  const [ error, setError ] = useState<string>( );
+  const [ peerError, setPeerError ] = useState<string>( );
+  const [ connectionError, setConnectionError ] = useState<string>( );
 
   const handleConnection = useCallback(
     ( conn:DataConnection ) => {
@@ -30,11 +31,11 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
           ( error ) => {
 
             console.error( error );
-            setError( ( error as any ).type );
+            setConnectionError( ( error as any ).type );
 
           }
         );
-        setError( undefined );
+        setConnectionError( undefined );
         setConnectionStatus( 'READY' );
         connectionRef.current = conn;
 
@@ -63,8 +64,8 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
   useEffect(
     () => {
 
-      const { current: peer } = peerRef;
-      if ( !peer || peer.destroyed ) {
+      setPeerError( undefined );
+      if ( !peerRef.current || peerRef.current.destroyed ) {
 
         if ( !userSetId ) {
 
@@ -78,22 +79,6 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         }
 
       }
-      return () => {
-
-        if ( !peer.destroyed ) {
-
-          peer.destroy();
-
-        }
-
-      };
-
-    },
-    /* eslint-disable-next-line function-paren-newline */
-    [ userSetId ] );
-  useEffect(
-    () => {
-
       const { current: peer } = peerRef;
       peer.on(
         'open',
@@ -101,7 +86,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       );
       peer.on(
         'error',
-        console.error
+        handlePeerError
       );
       peer.on(
         'connection',
@@ -109,14 +94,24 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       );
       return () => {
 
-        peer.removeListener(
-          'open',
-          handlePeerOpen
-        );
-        peer.removeListener(
-          'connection',
-          handleConnection
-        );
+        if ( !peer.destroyed ) {
+
+          peer.removeListener(
+            'open',
+            handlePeerOpen
+          );
+          peer.removeListener(
+            'error',
+            handlePeerError
+          );
+          peer.removeListener(
+            'connection',
+            handleConnection
+          );
+
+          peer.destroy();
+
+        }
 
       };
       function handlePeerOpen ( peerId: string ): void {
@@ -129,11 +124,26 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
         onOpen( peerId );
 
       }
+      function handlePeerError ( error: Error ) {
+
+        console.error( error );
+        const { message } = error;
+        if ( message.startsWith( 'ID' ) && message.endsWith( 'is taken' ) ) {
+
+          setPeerError( `${error.message}, please select another` );
+
+        }
+
+      }
+
 
     },
     /* eslint-disable-next-line function-paren-newline */
-    [ onOpen,
-      userSetId ]
+    [
+      userSetId,
+      onOpen,
+      handleConnection
+    ]
   );
 
   const { current: peer } = peerRef;
@@ -141,7 +151,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
   const connect = ( peerId:string ) => {
 
-    setError( undefined );
+    setConnectionError( undefined );
     if ( peer.open ) {
 
       return makeConnection();
@@ -179,7 +189,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 
           if ( tries === MAX_RETRIES ) {
 
-            setError( 'Peer does not exist or already in a game' );
+            setConnectionError( 'Peer does not exist or already in a game' );
             setConnectionStatus( 'DISCONNECTED' );
             conn.close();
             return clearInterval( interval );
@@ -249,7 +259,8 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
   };
   return {
     id: userSetId || serverId,
-    error,
+    connectionError,
+    peerError,
     loading: connectionStatus,
     connect,
     disconnect,
@@ -259,7 +270,7 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
   };
   function handleConnectionClosed ( reason:string|undefined = 'Player left' ) {
 
-    setError( reason );
+    setConnectionError( reason );
     setConnectionStatus( 'DISCONNECTED' );
     connectionRef.current = null;
 
