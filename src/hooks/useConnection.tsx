@@ -29,27 +29,35 @@ export function useConnectionContext ( ) {
 }
 
 
-export function ConnectionProvider ( { children }: {children:ReactNode|ReactNode[]} ) {
+type Props = {
+  children: ReactNode | ReactNode[];
+};
+
+export function ConnectionProvider ( { children }: Props ) {
 
   const {
     id,
     connect,
-    error,
+    connectionError,
+    peerError,
     loading: status,
     disconnect,
     addDataConnectionEventListener,
-    sendMessage
+    sendMessage,
+    setId
   } = usePeer( { onOpen: console.log } );
 
-  const gameReady = status === 'READY' && !error;
+  const gameReady = status === 'READY' && !connectionError;
   return <>
 
     <ConnectionPage
       id={id}
       connect={connect}
       connected={status === 'READY'}
-      disconnectReason={error}
+      disconnectReason={connectionError}
+      peerError={peerError}
       status={status}
+      setId={setId}
     />
     {gameReady && <connectionContext.Provider value={{
       sendMessage,

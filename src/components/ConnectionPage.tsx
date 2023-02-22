@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { IdDisplay } from './IdDisplay';
 
 const Root = styled( 'div' )<{connected:boolean}>`
   --panel-width: 15px;
@@ -43,105 +44,50 @@ const Root = styled( 'div' )<{connected:boolean}>`
     transform-origin: top;
     transform: rotateX(-90deg);
   }
+  & *:focus-visible{
+    outline-color: #2ac000;
+    outline-style: solid;
+    outline-width: 4px;
+  }
 `;
 
 const GameTitle = styled.h1`
   font-family:top-secret;
   color: #2ac000;
+  `;
+const ErrorMessage = styled.span`
+  color: #c03000;
+  font-weight: bold;
+  transition: all .2s;
 `;
 
-const IdSection = styled.section`
-  display: grid;
-  grid-template-areas: "id copy" "id link";
-  grid-row-gap: 5px ;
-  grid-column-gap: 10px ;
-  margin-bottom: 10px;
-`;
-const IdContainer = styled.div`
-  grid-area:id;
-  font-family: monospace;
-  border: 2px solid white;
-  padding: 10px;
-  font-size: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-`;
-
-const CopyButton = styled.button`
-  position: relative;
-  height: 30px;
-  width: 30px;
-  background: #ccc;
-  cursor: pointer;
-`;
-const ClipboardButton = styled( CopyButton )`
-  ::after,::before{
-    content: "";
-    border-radius: 3px;
-    border: 2px solid #333;
-    width: 8px;
-    height: 11px;
-    position: absolute;
-    display: block;
-  }
-  ::after{
-    left: 5px;
-    bottom: 3px;
-    background: inherit;
-  }
-  ::before{
-    left: 9px;
-    bottom: 6px;
-  }
-  
-`;
-const LinkButton = styled( CopyButton )`
-
-  ::after,::before{
-    content: "";
-    border-radius: 5px;
-    border: 2px solid #333;
-    width: 6px;
-    height: 12px;
-    position: absolute;
-    display: block;
-    left:50%;
-    top:50%;
-    rotate: 50deg;
-    translate: -50% -50%;
-  }
-  --x: 2px;
-  --y: 3px;
-  ::after{
-    transform: translateY(var(--y)) translateX(var(--x));
-  }
-  ::before{
-    transform: translateY(calc(0px - var(--y) )) translateX(calc(0px - var(--x) ));
-  }
-  
-`;
+type Props = {
+  id: string | undefined;
+  connect: ( peerId: string ) => void;
+  connected: boolean;
+  status: ConnectionStatus;
+  disconnectReason: string | undefined;
+  setId( newId: string ): void;
+  peerError?: string;
+};
 
 export function ConnectionPage ( {
   connect,
   id,
   connected,
   status,
-  disconnectReason
-}:{
-  id: string | undefined, connect: ( peerId: string ) =>void;
-  connected:boolean
-  status:ConnectionStatus;
-  disconnectReason:string|undefined;
-} ) {
+  disconnectReason,
+  setId,
+  peerError
+}:Props ) {
 
-  const [ peerId, setId ] = useState( () => {
+  const [ peerId, setPeerId ] = useState( () => {
 
     const searchParams = new URLSearchParams( document.location.search );
     return searchParams.get( 'peer' ) || '';
 
   } );
+  const peerErrorRef = useRef<HTMLSpanElement>( null );
   // auto connect if peerId provided
   useEffect(
     () => {
@@ -161,73 +107,61 @@ export function ConnectionPage ( {
 
       if ( connected ) {
 
-        setId( '' );
+        setPeerId( '' );
 
       }
 
     },
     [ connected ]
   );
+  const [ isEditing, setEditing ] = useState<boolean>( false );
+
   const sameId = peerId === id;
   const isLoading = status !== 'DISCONNECTED';
-  const disableButton = !peerId || connected || isLoading || sameId;
-  function copyId () {
+  const disableButton = !peerId ||
+    connected ||
+    isLoading ||
+    sameId ||
+    isEditing ||
+    !!peerError;
 
-    navigator.clipboard.writeText( id as string );
-
-  }
   return <Root connected={connected} >
     <GameTitle>
       [ Unnamed Artillery game ]
     </GameTitle>
-    Your id is:
-    <IdSection>
-      <IdContainer
-        onClick={copyId}
-        title="copy id to clipboard"
-      >
-        {id || 'Loading...'}
-      </IdContainer>
-      <ClipboardButton
-        title="copy id to clipboard"
-        onClick={copyId}
-      >
+    <IdDisplay
+      id={id}
+      setId={( newId ) => {
 
-      </ClipboardButton>
-      <LinkButton
-        title="copy direct link for your peer"
-        onClick={() => {
+        setId( newId );
+        setEditing( false );
 
-          const { origin, pathname } = document.location;
-          const peerLink = `${origin}${pathname}?peer=${encodeURIComponent( id as string )}`;
-          if ( import.meta.env.DEV ) {
-
-            window.open(
-              peerLink,
-              '_blank',
-            );
-
-          }
-          navigator.clipboard.writeText( peerLink );
-
-        } }
-      >
-
-      </LinkButton>
-    </IdSection>
+      }}
+      isEditing={isEditing}
+      cancelEdit={() => setEditing( false )}
+      enterEditMode={() => setEditing( true )}
+    />
+    {peerError && <ErrorMessage
+      ref={peerErrorRef}
+    >
+      {peerError}
+    </ErrorMessage>}
     <br />
     Send it to a friend or type in their id to connect: <br />
     <div
       style={{
-        display: 'flex'
+        display: 'flex',
+        gap: 5
       }}
     >
       <input
-        disabled={isLoading}
+        disabled={isLoading || isEditing}
         value={peerId}
         placeholder="Opponent's id"
-        title={peerId}
-        onChange={( { target: { value } } ) => setId( value )}
+        title={isEditing
+          ? 'Please finish editing your id'
+          : ''}
+        onChange={( { target: { value } } ) => setPeerId( value )}
         onKeyDown={( { key } ) => {
 
           if ( key === 'Enter' ) {
@@ -239,8 +173,38 @@ export function ConnectionPage ( {
         }}
       />
       <button
+        title={isEditing
+          ? 'Please finish editing your id'
+          : ''}
         disabled={disableButton}
+        onMouseOver={() => {
 
+          if ( peerError ) {
+
+            peerErrorRef.current?.setAttribute(
+              'style',
+              'rotate: 2deg; filter:brightness(1.3);'
+            );
+            setTimeout(
+              () => peerErrorRef.current?.setAttribute(
+                'style',
+                'rotate: -2deg; filter:brightness(1.3);'
+              ),
+              200
+
+            );
+            setTimeout(
+              () => peerErrorRef.current?.setAttribute(
+                'style',
+                'rotate: 0deg;'
+              ),
+              300
+
+            );
+
+          }
+
+        }}
         onClick={attemptConnection }
       >
         {isLoading
@@ -263,4 +227,5 @@ export function ConnectionPage ( {
   }
 
 }
+
 
