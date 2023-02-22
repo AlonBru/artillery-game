@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-export const IdSection = styled.section`
+const IdSection = styled.section`
   display: grid;
   grid-template-areas: "id copy" "id link";
   min-height: 65px;
@@ -9,7 +9,7 @@ export const IdSection = styled.section`
   grid-column-gap: 10px ;
   margin-bottom: 10px;
 `;
-export const IdContainer = styled.input`
+const IdContainer = styled.input`
   grid-area: id;
   font-family: monospace;
   border: 2px solid white;
@@ -19,21 +19,27 @@ export const IdContainer = styled.input`
   justify-content: center;
   align-items: center;
   cursor: text;
+  min-width: 250px;
 `;
-
+const IdButton = styled( IdContainer ).attrs( { as: 'button' } )`
+`;
 const IdActionButton = styled.button`
   position: relative;
   height: 30px;
   width: 30px;
-  background: #ccc;
+  background: #666;
   cursor: pointer;
-  color:black;
+  color:#e5e5e5;
+  :disabled{
+    filter: brightness(.7);
+    cursor: auto;
+  }
 `;
 const ClipboardButton = styled( IdActionButton )`
   ::after,::before{
     content: "";
     border-radius: 3px;
-    border: 2px solid #333;
+    border: 2px solid #e5e5e5;
     width: 8px;
     height: 11px;
     position: absolute;
@@ -55,7 +61,7 @@ const LinkButton = styled( IdActionButton )`
   ::after,::before{
     content: "";
     border-radius: 5px;
-    border: 2px solid #333;
+    border: 2px solid #e5e5e5;
     width: 6px;
     height: 12px;
     position: absolute;
@@ -76,101 +82,130 @@ const LinkButton = styled( IdActionButton )`
   
 `;
 
-export function IdDisplay ( { id, setId }: {
-  id: string;
+type Props = {
+  id?: string;
   setId( newId: string ): void;
-} ) {
+  isEditing: boolean;
+  cancelEdit(): void;
+  enterEditMode(): void;
+};
+
+export function IdDisplay ( {
+  id = '',
+  setId,
+  cancelEdit,
+  enterEditMode,
+  isEditing
+}: Props ) {
 
   const [ userId, setUserId ] = useState<string>( id );
-  const [ isEditing, setEditing ] = useState<boolean>( false );
   function copyId () {
 
     navigator.clipboard.writeText( id as string );
 
   }
-  return <IdSection
-    onBlur={( { currentTarget } ) => {
+  const inputRef = useRef<HTMLInputElement>( null );
+  useEffect(
+    () => {
 
-      requestAnimationFrame( () => {
+      if ( isEditing ) {
 
-        // Check if the new focused element is a child of the original container
-        if ( !currentTarget.contains( document.activeElement ) ) {
+        inputRef.current?.focus();
 
-          setEditing( false );
-          if ( isEditing ) {
+      }
 
-            resetId();
-
-          }
-
-        }
-
-
-      } );
-
-    }}
-  >
-    <IdContainer
-      title="Type your own id"
-      value={userId}
-      onChange={( { target: { value } } ) => setUserId( value )}
-      onClick={() => setUserId( '' )}
-      onFocus={() => {
-
-        setEditing( true );
-
-      }} />
+    },
+    [ isEditing ]
+  );
+  return <>
     {isEditing
-      ? <IdActionButton
-        title="Cancel"
-        onClick={() => {
+      ? 'Type in an id'
+      : 'Your id is:'
+    }
+    <IdSection>
+      {isEditing
+        ? <>
+          <IdContainer
+            ref={inputRef}
+            title="Type a different id"
+            value={userId}
+            disabled={!isEditing}
 
-          setEditing( false );
-          resetId();
+            onChange={( { target: { value } } ) => setUserId( value )}
+            onClick={() => {
 
-        }}
-      >
+              setUserId( '' );
+              enterEditMode();
+
+            }}
+          />
+          <IdActionButton
+            title="Cancel"
+            onClick={() => {
+
+              cancelEdit( );
+              resetId();
+
+            }}
+          >
         X
-      </IdActionButton>
-      : <ClipboardButton
-        title="Copy id to clipboard"
-        onClick={copyId}
-      >
+          </IdActionButton>
+          <IdActionButton
+            title="Accept"
+            disabled={userId.length < 1}
+            onClick={() => {
 
-      </ClipboardButton>}
-    {isEditing
-      ? <IdActionButton
-        title="Accept"
-        onClick={() => {
+              setId( userId );
 
-          setEditing( false );
-          setId( userId );
-
-        }}
-      >
+            }}
+          >
         V
-      </IdActionButton>
-      : <LinkButton
-        title="Copy direct link for your peer"
-        onClick={() => {
+          </IdActionButton>
+        </>
+        : <>
+          <IdButton
+            tabIndex={0}
+            title="Type a different id"
+            disabled={!id}
+            onChange={( { target: { value } } ) => setUserId( value )}
+            onClick={() => {
 
-          const { origin, pathname } = document.location;
-          const peerLink = `${origin}${pathname}?peer=${encodeURIComponent( id as string )}`;
-          if ( import.meta.env.DEV ) {
+              setUserId( '' );
+              enterEditMode();
 
-            window.open(
-              peerLink,
-              '_blank'
-            );
+            }}
+          >
+            {id || 'Loading...'}
+          </IdButton>
+          <ClipboardButton
+            title="Copy id to clipboard"
+            onClick={copyId}
+          >
 
-          }
-          navigator.clipboard.writeText( peerLink );
+          </ClipboardButton>
+          <LinkButton
+            title="Copy direct link for your peer"
+            onClick={() => {
 
-        }}
-      >
+              const { origin, pathname } = document.location;
+              const peerLink = `${origin}${pathname}?peer=${encodeURIComponent( id as string )}`;
+              if ( import.meta.env.DEV ) {
 
-      </LinkButton>}
-  </IdSection>;
+                window.open(
+                  peerLink,
+                  '_blank'
+                );
+
+              }
+              navigator.clipboard.writeText( peerLink );
+
+            }}
+          >
+
+          </LinkButton>
+        </>}
+    </IdSection>
+  </>;
 
 
   function resetId () {

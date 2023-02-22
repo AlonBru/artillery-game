@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { IdContainer, IdDisplay, IdSection } from './IdDisplay';
+import { IdDisplay } from './IdDisplay';
 
 const Root = styled( 'div' )<{connected:boolean}>`
   --panel-width: 15px;
@@ -99,24 +99,34 @@ export function ConnectionPage ( {
     },
     [ connected ]
   );
+  const [ isEditing, setEditing ] = useState<boolean>( false );
+
   const sameId = peerId === id;
   const isLoading = status !== 'DISCONNECTED';
-  const disableButton = !peerId || connected || isLoading || sameId;
+  const disableButton = !peerId ||
+    connected ||
+    isLoading ||
+    sameId ||
+    isEditing;
 
   return <Root connected={connected} >
     <GameTitle>
       [ Unnamed Artillery game ]
     </GameTitle>
-    Your id is:
-    {id
-      ? <IdDisplay
-        id={id}
-        setId={setId}
-      />
-      : <IdSection>
-        <IdContainer disabled value={'Loading...'}/>
-      </IdSection>
-    }
+    <IdDisplay
+      id={id}
+      setId={( newId ) => {
+
+        setId( newId );
+        setEditing( false );
+
+      }}
+      isEditing={isEditing}
+      cancelEdit={() => setEditing( false )}
+      enterEditMode={() => setEditing( true )}
+    />
+
+
     <br />
     Send it to a friend or type in their id to connect: <br />
     <div
@@ -125,10 +135,12 @@ export function ConnectionPage ( {
       }}
     >
       <input
-        disabled={isLoading}
+        disabled={isLoading || isEditing}
         value={peerId}
         placeholder="Opponent's id"
-        title={peerId}
+        title={isEditing
+          ? 'Please finish editing your id'
+          : ''}
         onChange={( { target: { value } } ) => setPeerId( value )}
         onKeyDown={( { key } ) => {
 
@@ -141,6 +153,9 @@ export function ConnectionPage ( {
         }}
       />
       <button
+        title={isEditing
+          ? 'Please finish editing your id'
+          : ''}
         disabled={disableButton}
 
         onClick={attemptConnection }
