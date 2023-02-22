@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 const IdSection = styled.section`
   display: grid;
@@ -102,8 +102,7 @@ const CancelButton = styled( IdActionButton )`
   }
   
 `;
-const AcceptButton = styled( IdActionButton )`
-
+const acceptIcon = css`
   ::after,::before{
     content: "";
     background: #e5e5e5;
@@ -121,6 +120,41 @@ const AcceptButton = styled( IdActionButton )`
   ::before{
     transform:translateX(-5px) translateY(1px) rotateZ(-45deg) scaleY(0.3);
   }
+  `;
+const resetIcon = css`
+  ::after,::before{
+    content: "";
+    border-color: #e5e5e5;
+    position: absolute;
+    display: block;
+    left:50%;
+    top:50%;
+    translate: -50% -50%;
+  }
+  ::after{
+    width: 0;
+    height: 0;
+    background: #666;
+    border-style: solid;
+    border-width: 5px 7px 5px 0;
+    border-color: transparent #e5e5e5 transparent transparent;
+    transform: translate(-5px, -7px);
+    box-shadow: -2px 3px 0 0 #666;
+  }
+  ::before{
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border-width: 3px;
+    border-style: solid;
+    background: unset;
+  }
+  `;
+const AcceptButton = styled( IdActionButton )<{isAccept:boolean}>`
+
+  ${( { isAccept } ) => ( isAccept
+    ? acceptIcon
+    : resetIcon )}
   
 `;
 
@@ -188,8 +222,10 @@ export function IdDisplay ( {
           >
           </CancelButton>
           <AcceptButton
-            title="Accept"
-            disabled={userId.length < 1}
+            isAccept={userId.length >= 1}
+            title={userId.length >= 1
+              ? 'Accept new Id'
+              : 'Use auto id'}
             onClick={() => {
 
               setId( userId );
