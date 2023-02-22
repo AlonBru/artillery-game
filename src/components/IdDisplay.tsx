@@ -146,15 +146,11 @@ export function IdDisplay ( {
     navigator.clipboard.writeText( id as string );
 
   }
-  const inputRef = useRef<HTMLInputElement>( null );
+  const idContainerRef = useRef<HTMLInputElement>( null );
   useEffect(
     () => {
 
-      if ( isEditing ) {
-
-        inputRef.current?.focus();
-
-      }
+      idContainerRef.current?.focus();
 
     },
     [ isEditing ]
@@ -168,7 +164,7 @@ export function IdDisplay ( {
       {isEditing
         ? <>
           <IdContainer
-            ref={inputRef}
+            ref={idContainerRef}
             title="Type a different id"
             value={userId}
             disabled={!isEditing}
@@ -204,6 +200,7 @@ export function IdDisplay ( {
         </>
         : <>
           <IdButton
+            ref={idContainerRef}
             tabIndex={0}
             title="Type a different id"
             disabled={!id}

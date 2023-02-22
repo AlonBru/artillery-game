@@ -44,6 +44,11 @@ const Root = styled( 'div' )<{connected:boolean}>`
     transform-origin: top;
     transform: rotateX(-90deg);
   }
+  & *:focus-visible{
+    outline-color: #cb3000;
+    outline-style: solid;
+    outline-width: 2px;
+  }
 `;
 
 const GameTitle = styled.h1`
