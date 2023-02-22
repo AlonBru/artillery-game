@@ -81,6 +81,48 @@ const LinkButton = styled( IdActionButton )`
   }
   
 `;
+const CancelButton = styled( IdActionButton )`
+
+  ::after,::before{
+    content: "";
+    background: #e5e5e5;
+    width: 3px;
+    height: 12px;
+    position: absolute;
+    display: block;
+    left:50%;
+    top:50%;
+    translate: -50% -50%;
+  }
+  ::after{
+    transform: rotate(45deg);
+  }
+  ::before{
+    transform: rotate(-45deg);
+  }
+  
+`;
+const AcceptButton = styled( IdActionButton )`
+
+  ::after,::before{
+    content: "";
+    background: #e5e5e5;
+    width: 3px;
+    height: 12px;
+    position: absolute;
+    display: block;
+    left:50%;
+    top:50%;
+    translate: -50% -50%;
+  }
+  ::after{
+    transform: rotate(45deg);
+  }
+  ::before{
+    transform:translateX(-5px) translateY(1px) rotateZ(-45deg) scaleY(0.3);
+  }
+  
+`;
 
 type Props = {
   id?: string;
@@ -139,7 +181,7 @@ export function IdDisplay ( {
 
             }}
           />
-          <IdActionButton
+          <CancelButton
             title="Cancel"
             onClick={() => {
 
@@ -148,9 +190,8 @@ export function IdDisplay ( {
 
             }}
           >
-        X
-          </IdActionButton>
-          <IdActionButton
+          </CancelButton>
+          <AcceptButton
             title="Accept"
             disabled={userId.length < 1}
             onClick={() => {
@@ -159,8 +200,7 @@ export function IdDisplay ( {
 
             }}
           >
-        V
-          </IdActionButton>
+          </AcceptButton>
         </>
         : <>
           <IdButton
