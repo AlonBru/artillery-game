@@ -45,16 +45,16 @@ const Root = styled( 'div' )<{connected:boolean}>`
     transform: rotateX(-90deg);
   }
   & *:focus-visible{
-    outline-color: #cb3000;
+    outline-color: #2ac000;
     outline-style: solid;
-    outline-width: 2px;
+    outline-width: 4px;
   }
 `;
 
 const GameTitle = styled.h1`
   font-family:top-secret;
   color: #2ac000;
-`;
+  `;
 const ErrorMessage = styled.span`
   color: #c03000;
   font-weight: bold;
@@ -150,7 +150,8 @@ export function ConnectionPage ( {
     Send it to a friend or type in their id to connect: <br />
     <div
       style={{
-        display: 'flex'
+        display: 'flex',
+        gap: 5
       }}
     >
       <input
