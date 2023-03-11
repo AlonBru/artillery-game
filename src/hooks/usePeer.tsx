@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect, useRef, useState
 } from 'react';
+import { BOARD_SIZE } from '../constants';
 
 const MAX_RETRIES = 30;
 const RETRY_INTERVAL_MS = 100;
@@ -233,13 +234,29 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
       throw new Error( 'Tried to add a listener to non-existnet connection' );
 
     }
-    function handleMessage ( data: unknown|GameMessage ) {
+    function handleMessage ( message: unknown|GameMessage ) {
 
-      if ( isGameMessage( data ) ) {
+      if ( !isGameMessage( message ) ) {
 
-        listener( data );
+        return;
 
       }
+      if ( message.type !== 'rematch' ) {
+
+        if ( isHitMessage( message ) || isPositionMessage( message ) ) {
+
+          message.data = transformPeerPositionVector( message.data );
+
+        }
+        if ( isCommandMessage( message ) && message.data ) {
+
+          message.data.target = transformPeerPositionVector( message.data.target );
+
+        }
+
+      }
+      listener( message );
+
 
     }
     connection.on(
@@ -281,5 +298,30 @@ export function usePeer ( { onOpen }:{onOpen( id:string ):void, } ) {
 function isGameMessage ( data:unknown|GameMessage ):data is GameMessage {
 
   return ( data as GameMessage )?.gameMessage;
+
+}
+function isHitMessage ( data:GameMessage ):data is IHitMessage {
+
+  return data.type === 'hit';
+
+}
+function isPositionMessage ( data:GameMessage ):data is IPositionMessage {
+
+  return data.type === 'position';
+
+}
+function isCommandMessage ( data:GameMessage ):data is ICommandMessage {
+
+  return data.type === 'command';
+
+}
+
+/** Treat positions sent by peer as if they are looking at the board from the opposite side */
+function transformPeerPositionVector ( position:Vector2 ):Vector2 {
+
+  return {
+    x: ( BOARD_SIZE - 1 ) - position.x,
+    y: ( BOARD_SIZE - 1 ) - position.y,
+  };
 
 }
