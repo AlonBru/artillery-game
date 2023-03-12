@@ -1,19 +1,21 @@
 import { GameUI } from './GameUI';
 import { GameLogicProvider } from '../hooks/useGameManager';
-import { SimulatedConnectionProvider } from '../hooks/useSimulatedConnection';
+import { useSimulatedConnection } from '../hooks/useSimulatedConnection';
 
 export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
+  const { fireMessage, SimulatedConnectionProvider } = useSimulatedConnection( {
+    onDisconnect: exitTutorial,
+    handleSentMessage () {},
+  } );
   return <div>tutorial
     <button onClick={exitTutorial}>tutorial</button>
-    <SimulatedConnectionProvider
-      onDisconnect={exitTutorial}
-      handleSentMessage={() => {}}
-    >
+    <SimulatedConnectionProvider>
       <GameLogicProvider>
         <GameUI />
       </GameLogicProvider>
     </SimulatedConnectionProvider>
+
   </div>;
 
 }

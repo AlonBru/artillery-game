@@ -1,35 +1,29 @@
 import {
-  createContext, ReactNode, useContext, useRef
+  ComponentPropsWithoutRef,
+  createContext,
+  useCallback,
+  useRef
 } from 'react';
 
 import { connectionContext } from './useConnection';
 
 export interface SimulatedGameConnection {
   fireMessage( message:GameMessage ):void
+  SimulatedConnectionProvider( props:ComponentPropsWithoutRef<'div'> ):JSX.Element
 }
 
 /* eslint-disable-next-line max-len */
 export const simulatedConnectionContext = createContext<SimulatedGameConnection|null>( null );
 
-export function useSimulatedConnectionContext ( ) {
-
-  const context = useContext( connectionContext );
-  if ( !context ) {
-
-    throw new Error( 'trying to useSimulatedConnectionContext without provider' );
-
-  }
-
-  return context;
-
-}
 type Props = {
-  children: ReactNode | ReactNode[];
   onDisconnect():void;
   handleSentMessage( message:GameMessage ):void;
 };
 
-export function SimulatedConnectionProvider ( { children, onDisconnect, handleSentMessage }: Props ) {
+export function useSimulatedConnection ( {
+  onDisconnect,
+  handleSentMessage,
+}: Props ):SimulatedGameConnection {
 
   const eventListenersRef = useRef<Set<GameEventListener>>( new Set<GameEventListener>() );
   function fireMessage ( message:GameMessage ) {
@@ -37,42 +31,35 @@ export function SimulatedConnectionProvider ( { children, onDisconnect, handleSe
     eventListenersRef.current.forEach( ( listener ) => listener( message ) );
 
   }
-  return <>
+  const SimulatedConnectionProvider = useCallback(
+    ( { children }:ComponentPropsWithoutRef<'div'> ) => (
+      <connectionContext.Provider
+        value={{
+          sendMessage: handleSentMessage,
+          addDataConnectionEventListener ( listener ) {
 
-    <simulatedConnectionContext.Provider
-      value={{
-        fireMessage
-      }}
-    >
-      <connectionContext.Provider value={{
-        sendMessage: handleSentMessage,
-        addDataConnectionEventListener ( listener ) {
+            eventListenersRef.current.add( listener );
+            return function clearEventListener () {
 
-          eventListenersRef.current.add( listener );
-          return function clearEventListener () {
+              eventListenersRef.current.delete( listener );
 
-            eventListenersRef.current.delete( listener );
+            };
 
-          };
+          },
+          disconnect: onDisconnect
 
-        },
-        disconnect: onDisconnect
+        }}
 
-      }} >
-        <button
-          onClick={() => fireMessage( {
-            type: 'rematch',
-            gameMessage: true,
-            data: 'request'
-          } )}
-        >
-        kill
-        </button>
-        {children}
-      </connectionContext.Provider>
-    </simulatedConnectionContext.Provider>
+      >{children}</connectionContext.Provider>
+    ),
+    [ handleSentMessage,
+      onDisconnect ]
+  );
+  return {
+    fireMessage,
+    SimulatedConnectionProvider
 
-  </>;
+  };
 
 
 }
