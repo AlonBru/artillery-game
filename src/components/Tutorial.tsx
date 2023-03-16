@@ -6,7 +6,7 @@ import { useSimulatedConnection } from '../hooks/useSimulatedConnection';
 import { connectionContext } from '../hooks/useConnection';
 
 import { useEffect, useState } from 'react';
-import { battleGridId } from './Board';
+import { battleGridId, CraterClassName, lastKnownPositionId } from './Board';
 import { communicationDisplayId, reloadButtonId } from './CommandPanel';
 import { CommandMessage, PositionMessage } from '../helpers/Message';
 import { commandSelectorId } from './CommandSelector';
@@ -44,10 +44,10 @@ type TutorialStage = {
   highlightedElementId?:string;
   text: string;
   withNextButton?:boolean;
-  doOnMessage?:GameMessage['type'],
-  eventToFireOnNext?:GameMessage
-  autoSkipConditions?:Partial<GameConditions>
-  allowNextConditions?:Partial<GameConditions>
+  doOnMessage?:GameMessage['type'];
+  eventToFireOnNext?:GameMessage;
+  autoSkipConditions?:Partial<GameConditions>;
+  allowNextConditions?:Partial<GameConditions>;
 }
 const stages :Array<TutorialStage> = [
 
@@ -68,7 +68,7 @@ const stages :Array<TutorialStage> = [
 It is a representation of the battle field.
 On it will be displayed your unit and other elements that are in the field.`,
     withNextButton: true,
-    highlightedElementId: battleGridId
+    highlightedElementId: battleGridId,
   },
   {
     text: `Let's deploy your unit. 
@@ -96,6 +96,7 @@ This means your opponent has not made a move yet in this turn.
     text: `The turns in the game take effect at the same time.
 This means that once you have made your move, you will need to wait for your opponent to make their.
 Then, both moves will take place and you will both see the results of the turn. 
+For the time being the tutorial will move right ahead as if your opponent is very quick to respond.
 `,
     highlightedElementId: communicationDisplayId,
     withNextButton: true,
@@ -103,16 +104,15 @@ Then, both moves will take place and you will both see the results of the turn.
   },
   {
     text: `Now your opponent has deployed their unit and the game can begin.
-Note they do not see where you placed your unit, and you don't see their position. 
+They do not see where you placed your unit, and you don't see their position. 
 Your status screen tells you that you are ready to go, and is requesting your command.
-For the time being the tutorial will move right ahead as if your opponent is very quick.
 `,
     highlightedElementId: communicationDisplayId,
     withNextButton: true,
   },
   {
     text: `Notice below the status screen your command mode selector.
-It is currently set to issue a MOVE command. 
+It should be set to issue a MOVE command. 
 `,
     highlightedElementId: commandSelectorId,
     withNextButton: true,
@@ -132,7 +132,7 @@ Try issuing a MOVE command by clicking a highlighted grid square.
   {
     text: `Now let's explore the other commands at your disposal.
 You can change command modes by clicking the command mode selector. 
-Please select the FIRE mode.
+Please select the FIRE mode to continue.
   `,
     highlightedElementId: commandSelectorId,
     eventToFireOnNext: new CommandMessage( null ),
@@ -155,7 +155,7 @@ You can never fire on your own position.
 This is now a shelled area, which cannot be moved into.
 This can be used to block enemy movement.
 `,
-    highlightedElementId: battleGridId,
+    highlightedElementId: CraterClassName,
     withNextButton: true,
   },
   {
@@ -163,7 +163,7 @@ This can be used to block enemy movement.
 It will appear when you shoot, and mark where the enemy unit is at that time.
 The enemy will also be able to see your position when they shoot, of course.
 `,
-    highlightedElementId: battleGridId,
+    highlightedElementId: lastKnownPositionId,
     withNextButton: true,
   },
   {
@@ -180,7 +180,8 @@ instead you will have the RELOAD mode available.
 The button under the selector will light up, and you can use it to reload your unit's cannon.
 `,
     highlightedElementId: commandSelectorId,
-    autoSkipConditions: {
+    withNextButton: true,
+    allowNextConditions: {
       commandMode: 'RELOAD'
     }
   },
@@ -241,23 +242,27 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
   useEffect(
     () => {
 
-      function highlight ( id?:string ) {
+      function highlight ( identifier?:string ) {
 
-        if ( !id ) {
+        if ( !identifier ) {
 
           return;
 
         }
-        const elementToHighlight = document.getElementById( id );
+        const elementToHighlight = document.getElementById( identifier ) ||
+        document.getElementsByClassName( identifier )?.[0] as HTMLElement;
         if ( !elementToHighlight ) {
 
-          throw new Error( `Element with id ${id} does not exist` );
+          throw new Error( `Element with id or class ${identifier} was not found` );
 
         }
+        const style = getComputedStyle( elementToHighlight );
         const prevZIndex = elementToHighlight?.style.zIndex;
         elementToHighlight.style.zIndex = `${darkOverlayZindex + 1}`;
         const prevPosition = elementToHighlight?.style.position;
-        elementToHighlight.style.position = prevPosition || 'relative';
+        elementToHighlight.style.position = prevPosition || ( style.position !== 'static'
+          ? style.position
+          : null ) || 'relative';
 
         return function cleanUp () {
 
@@ -280,7 +285,6 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
         const moveOn = getConditionState( autoSkipConditions );
         if ( moveOn ) {
 
-          console.log( 'movedOn' );
           nextStage();
 
         }
@@ -365,8 +369,6 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     <TutorialOverlay>
       <TextContainer>
         <div>
-          mode:{currentConditions.commandMode}
-          placed:{String( currentConditions.isUnitPlaced )} <br/>
           {text}
         </div>
         {withNextButton && <button

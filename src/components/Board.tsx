@@ -7,6 +7,9 @@ import { useLastKnownPosition } from '../hooks/useLastKnownPosition';
 import { BoardCell } from './BoardCell';
 import { BoardColumn, GreenScreenDisplay } from './styled';
 
+export const lastKnownPositionId = 'last-known-marker';
+export const CraterClassName = 'shelled-area';
+
 const Screen = styled( GreenScreenDisplay )`
   padding:30px;
   width: fit-content;
@@ -323,17 +326,6 @@ export function Board ( {
 
   const { awaitingPlayerInput } = useGameLogic();
   const lastKnown = useLastKnownPosition();
-  function clearCursor () {
-
-    if ( !awaitingPlayerInput ) {
-
-      // if command was dispatched already, do not clear cursor
-      return;
-
-    }
-    setCursor( null );
-
-  }
   const Marker = markerMapper[commandMode];
   return <Screen id={battleGridId}>
     <BoardRoot
@@ -377,9 +369,9 @@ export function Board ( {
           >
             <>
               {item === 'PLAYER' && <Player />}
-              {cratered && <Crater />}
+              {cratered && <Crater className={CraterClassName} />}
               {item === 'DESTROYED' && <Wreck />}
-              {isLastKnown && <LastKnownPosition/>}
+              {isLastKnown && <LastKnownPosition id={lastKnownPositionId}/>}
             </>
           </BoardCell>;
 
@@ -393,6 +385,17 @@ export function Board ( {
     </BoardRoot>
 
   </Screen>;
+  function clearCursor () {
+
+    if ( !awaitingPlayerInput ) {
+
+      // if command was dispatched already, do not clear cursor
+      return;
+
+    }
+    setCursor( null );
+
+  }
 
 }
 
