@@ -284,7 +284,7 @@ export function CommandPanel ( {
     </CommunicationDisplay>
     <CommandSelector
       commandMode={commandMode}
-      setCommandMode={setCommandMode}
+      setCommandMode={setCommandMode as Dispatch<SetStateAction<SelectableCommandMode>>}
       disabled={!awaitingPlayerInput }
     />
     <LightupButton

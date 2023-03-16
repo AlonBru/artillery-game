@@ -22,7 +22,7 @@ export function GameUI () {
 
   const {
     status,
-    sendCommand: sendEvent,
+    sendCommand,
     playerPosition,
     board,
     awaitingPlayerInput,
@@ -67,7 +67,7 @@ export function GameUI () {
 
     if ( commandMode === 'RELOAD' ) {
 
-      sendEvent( {
+      sendCommand( {
         type: commandMode
       } );
       return;
@@ -78,7 +78,7 @@ export function GameUI () {
       throw new Error( 'action dispatched without selecting a target' );
 
     }
-    sendEvent( {
+    sendCommand( {
       target: cursor,
       type: commandMode
     } );

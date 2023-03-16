@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import styled from 'styled-components';
+import { CommandModeChangeEvent, fireGameEvent } from '../helpers/customEvents';
 import { useGameLogic } from '../hooks/useGameManager';
 
 const SelectorRoot = styled.div`
@@ -98,7 +99,7 @@ export const commandSelectorId = 'command-mode-selector';
 export function CommandSelector ( { commandMode, setCommandMode, disabled }: {
   disabled?:boolean;
   commandMode: CommandMode;
-  setCommandMode: Dispatch<SetStateAction<CommandMode>>|undefined;
+  setCommandMode: Dispatch<SetStateAction<SelectableCommandMode>>|undefined;
 } ) {
 
   const { loaded } = useGameLogic();
@@ -112,9 +113,16 @@ export function CommandSelector ( { commandMode, setCommandMode, disabled }: {
     : 'RELOAD';
   function setCommand () {
 
-    setCommandMode?.( ( mode ) => ( mode === 'MOVE'
-      ? fireMode
-      : 'MOVE' ) );
+
+    setCommandMode?.( ( mode ) => {
+
+      const newMode = ( mode === 'MOVE'
+        ? fireMode
+        : 'MOVE' );
+      fireGameEvent( new CommandModeChangeEvent( newMode ) );
+      return newMode;
+
+    } );
 
   }
   return <SelectorRoot id={commandSelectorId}>
