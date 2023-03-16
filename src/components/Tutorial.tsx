@@ -48,6 +48,7 @@ type TutorialStage = {
   eventToFireOnNext?:GameMessage;
   autoSkipConditions?:Partial<GameConditions>;
   allowNextConditions?:Partial<GameConditions>;
+  disableInteractionWithHighlight?:true;
 }
 const stages :Array<TutorialStage> = [
 
@@ -69,6 +70,7 @@ It is a representation of the battle field.
 On it will be displayed your unit and other elements that are in the field.`,
     withNextButton: true,
     highlightedElementId: battleGridId,
+    disableInteractionWithHighlight: true
   },
   {
     text: `Let's deploy your unit. 
@@ -128,6 +130,14 @@ Try issuing a MOVE command by clicking a highlighted grid square.
     highlightedElementId: battleGridId,
     doOnMessage: 'command',
     eventToFireOnNext: new CommandMessage( null ),
+  },
+  {
+    text: `Your unit has moved to the selected square.
+`,
+    highlightedElementId: battleGridId,
+    withNextButton: true,
+    disableInteractionWithHighlight: true
+
   },
   {
     text: `Now let's explore the other commands at your disposal.
@@ -215,7 +225,8 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     doOnMessage,
     eventToFireOnNext: fireOnNext,
     autoSkipConditions,
-    allowNextConditions
+    allowNextConditions,
+    disableInteractionWithHighlight
   } = stages[currentStageIndex];
   const [ currentConditions, setCurrentConditions ] = useState<GameConditions>( {
     commandMode: 'MOVE',
@@ -242,13 +253,9 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
   useEffect(
     () => {
 
-      function highlight ( identifier?:string ) {
+      function highlight ( identifier:string ):()=>void {
 
-        if ( !identifier ) {
 
-          return;
-
-        }
         const elementToHighlight = document.getElementById( identifier ) ||
         document.getElementsByClassName( identifier )?.[0] as HTMLElement;
         if ( !elementToHighlight ) {
@@ -256,23 +263,36 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
           throw new Error( `Element with id or class ${identifier} was not found` );
 
         }
-        const style = getComputedStyle( elementToHighlight );
         const prevZIndex = elementToHighlight?.style.zIndex;
         elementToHighlight.style.zIndex = `${darkOverlayZindex + 1}`;
+
+        const style = getComputedStyle( elementToHighlight );
         const prevPosition = elementToHighlight?.style.position;
         elementToHighlight.style.position = prevPosition || ( style.position !== 'static'
           ? style.position
           : null ) || 'relative';
 
+        const { pointerEvents } = elementToHighlight.style;
+
+        elementToHighlight.style.pointerEvents = disableInteractionWithHighlight
+          ? 'none'
+          : pointerEvents;
+
+
         return function cleanUp () {
 
           elementToHighlight.style.zIndex = prevZIndex;
           elementToHighlight.style.position = prevPosition;
+          elementToHighlight.style.pointerEvents = pointerEvents;
 
         };
 
       }
-      return highlight( highlightedElementId );
+      if ( highlightedElementId ) {
+
+        return highlight( highlightedElementId );
+
+      }
 
     },
     [ currentStageIndex ]
