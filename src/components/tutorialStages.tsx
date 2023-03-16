@@ -1,8 +1,9 @@
 import { battleGridId, CraterClassName, lastKnownPositionId } from './Board';
 import { communicationDisplayId, reloadButtonId } from './CommandPanel';
-import { CommandMessage, PositionMessage } from '../helpers/Message';
+import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 import { commandSelectorId } from './CommandSelector';
 import { BOARD_SIZE } from '../constants';
+import { instructionsPanelId } from './InstructionsMaker';
 
 export type GameConditions = {
   commandMode:SelectableCommandMode;
@@ -149,8 +150,7 @@ Please fire somewhere on the battle grid.
   {
     text: `Notice the position you have fired on is now marked by an X.
 This is now a shelled area, which cannot be moved into.
-This can be used to block enemy movement.
-`,
+This can be used to block enemy movement.`,
     highlightedElementId: CraterClassName,
     withNextButton: true,
   },
@@ -195,10 +195,34 @@ Select the RELOAD mode to continue.`,
     eventToFireOnNext: new CommandMessage( null ),
     doOnMessage: 'command'
   },
+  // how to win
+  {
+    text: 'You are now reloaded and are able to fire again.',
+    highlightedElementId: reloadButtonId,
+    eventToFireOnNext: new HitMessage( {
+      x: BOARD_SIZE - 1,
+      y: Math.round( Math.random() * BOARD_SIZE )
+    } ),
+    withNextButton: true
+  },
+  // endgame recognition
+  {
+    text: 'This is how it would look if you were to hit the enemy unit.',
+    highlightedElementId: battleGridId,
+    disableInteractionWithHighlight: true,
+    withNextButton: true
+  },
+  // instructions button recognition
+  {
+    text: `If you need to review the rules while in game, you can use the 'i' instructions button.
+Once you use it it will also cease to flash.
+To clear the instructions page, click it.`,
+    highlightedElementId: instructionsPanelId,
+    withNextButton: true
+  },
   // End
   {
-    text: `You are now reloaded and are able to fire again.
-You know the basics. Go get them tiger!`,
+    text: 'You know the basics. Go get them tiger!',
     highlightedElementId: communicationDisplayId,
   }
 ];

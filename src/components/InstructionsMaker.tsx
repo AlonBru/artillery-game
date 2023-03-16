@@ -6,6 +6,8 @@ import { battleGridId } from './Board';
 import { commandPanelId } from './CommandPanel';
 import { LightupButton } from './LightupButton';
 
+export const instructionsPanelId = 'instructions-panel';
+
 const Root = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
@@ -191,7 +193,7 @@ const rules = [
 export function InstructionsMaker () {
 
   const [ showPaper, setShow ] = useState<boolean>( );
-  return <Root>
+  return <Root id={instructionsPanelId}>
     <InstructionPrinter
       show={showPaper}
     >
