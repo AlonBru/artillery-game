@@ -93,6 +93,8 @@ const SelectorKnob = styled.button<{ mode: number; }>`
   }
   
 `;
+
+export const commandSelectorId = 'command-mode-selector';
 export function CommandSelector ( { commandMode, setCommandMode, disabled }: {
   disabled?:boolean;
   commandMode: CommandMode;
@@ -115,7 +117,7 @@ export function CommandSelector ( { commandMode, setCommandMode, disabled }: {
       : 'MOVE' ) );
 
   }
-  return <SelectorRoot>
+  return <SelectorRoot id={commandSelectorId}>
     <ModesContainer>
       {modes.map( ( mode, i ) => <ModeItem
         selected={commandMode === mode}
