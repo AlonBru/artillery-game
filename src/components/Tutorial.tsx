@@ -40,7 +40,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     text,
     highlightedElementId,
     withNextButton,
-    doOnMessage,
+    moveNextOn,
     eventToFireOnNext: fireOnNext,
     autoSkipConditions,
     allowNextConditions,
@@ -58,7 +58,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     onDisconnect: exitTutorial,
     handleSentMessage: ( { type } ) => {
 
-      const stageToAdvance = doOnMessage === type;
+      const stageToAdvance = moveNextOn === type;
       if ( stageToAdvance ) {
 
         // setStageIndex( stageToAdvance );
@@ -186,7 +186,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
         /* eslint-disable-next-line no-empty-function, @typescript-eslint/no-empty-function */
         sendMessage: ( { type } ) => {
 
-          const advanceStage = doOnMessage === type;
+          const advanceStage = moveNextOn === type;
           if ( advanceStage ) {
 
             nextStage();

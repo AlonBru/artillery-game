@@ -6,18 +6,39 @@ import { BOARD_SIZE } from '../constants';
 import { instructionsPanelId } from './InstructionsMaker';
 
 export type GameConditions = {
+
+  /** currently selected command mode */
   commandMode:SelectableCommandMode;
+
+  /** whether the player has placed their unit */
   isUnitPlaced:boolean
 }
 type TutorialStage = {
-  highlightedElementId?:string;
+
+  /** tutorial text  */
   text: string;
-  withNextButton?:boolean;
-  doOnMessage?:GameMessage['type'];
-  eventToFireOnNext?:GameMessage;
-  autoSkipConditions?:Partial<GameConditions>;
-  allowNextConditions?:Partial<GameConditions>;
+
+  /** id or className of element to highlight for this stage  */
+  highlightedElementId?:string;
+
+  /** whether to prevent interaction with highlighted element */
   disableInteractionWithHighlight?:true;
+
+
+  /** show a button to continue to next stage */
+  withNextButton?:boolean;
+
+  /** event type ( caused by player) to continue to next stage  */
+  moveNextOn?:GameMessage['type'];
+
+  /** event ( simulated opponent) to fire when continuing to next stage */
+  eventToFireOnNext?:GameMessage;
+
+  /** conditions to allow clicking next button */
+  allowNextConditions?:Partial<GameConditions>;
+
+  /** conditions to automatically continue to next stage */
+  autoSkipConditions?:Partial<GameConditions>;
 }
 
 export const stages: Array<TutorialStage> = [
@@ -109,7 +130,7 @@ Your unit can move to the adjacent grid squares, highlighted on the battle grid.
 Try issuing a MOVE command by clicking a highlighted grid square.
 `,
     highlightedElementId: battleGridId,
-    doOnMessage: 'command',
+    moveNextOn: 'command',
     eventToFireOnNext: new CommandMessage( null ),
   },
   // unit moved
@@ -144,7 +165,7 @@ Please fire somewhere on the battle grid.
       x: BOARD_SIZE - 1,
       y: Math.round( Math.random() * BOARD_SIZE )
     } ),
-    doOnMessage: 'command'
+    moveNextOn: 'command'
   },
   // shelled zone recognition
   {
@@ -193,7 +214,7 @@ Select the RELOAD mode to continue.`,
 `,
     highlightedElementId: reloadButtonId,
     eventToFireOnNext: new CommandMessage( null ),
-    doOnMessage: 'command'
+    moveNextOn: 'command'
   },
   // how to win
   {
