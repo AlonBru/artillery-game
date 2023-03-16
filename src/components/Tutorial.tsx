@@ -11,6 +11,7 @@ import { communicationDisplayId, reloadButtonId } from './CommandPanel';
 import { CommandMessage, PositionMessage } from '../helpers/Message';
 import { commandSelectorId } from './CommandSelector';
 import { BOARD_SIZE } from '../constants';
+import { CommandModeChangeEvent, UnitPlacedEvent, useSubscribeToGameEvent } from '../helpers/customEvents';
 
 const darkOverlayZindex = 4;
 const TutorialOverlay = styled.div`
@@ -34,6 +35,10 @@ const TextContainer = styled.div`
   align-items: center;
   white-space: pre-wrap;
 `;
+type GameConditions = {
+  commandMode:SelectableCommandMode;
+  isUnitPlaced:boolean
+}
 
 type TutorialStage = {
   highlightedElementId?:string;
@@ -41,6 +46,8 @@ type TutorialStage = {
   withNextButton?:boolean;
   doOnMessage?:GameMessage['type'],
   eventToFireOnNext?:GameMessage
+  autoSkipConditions?:Partial<GameConditions>
+  allowNextConditions?:Partial<GameConditions>
 }
 const stages :Array<TutorialStage> = [
 
@@ -68,7 +75,9 @@ On it will be displayed your unit and other elements that are in the field.`,
 Click the grid square on which you'd like to deploy.
 Units can only deploy on the bottom row, which is highlighted at the start of the game.`,
     highlightedElementId: battleGridId,
-    doOnMessage: 'command',
+    autoSkipConditions: {
+      isUnitPlaced: true
+    }
   },
   {
     text: 'Great, notice your unit is on the board now.',
@@ -105,8 +114,11 @@ For the time being the tutorial will move right ahead as if your opponent is ver
     text: `Notice below the status screen your command mode selector.
 It is currently set to issue a MOVE command. 
 `,
-    highlightedElementId: communicationDisplayId,
+    highlightedElementId: commandSelectorId,
     withNextButton: true,
+    allowNextConditions: {
+      commandMode: 'MOVE'
+    }
   },
   {
     text: `A MOVE command can be issued using the battle grid.
@@ -124,7 +136,10 @@ Please select the FIRE mode.
   `,
     highlightedElementId: commandSelectorId,
     eventToFireOnNext: new CommandMessage( null ),
-    withNextButton: true
+    withNextButton: true,
+    allowNextConditions: {
+      commandMode: 'FIRE'
+    }
   },
   {
     text: `You can select any highlighted square to fire on.
@@ -161,11 +176,13 @@ instead you will have the RELOAD mode available.
   },
   // Add a move when not loaded stage ( player gets shot at)
   {
-    text: `Select the Reload mode.
+    text: `Select the RELOAD mode.
 The button under the selector will light up, and you can use it to reload your unit's cannon.
 `,
     highlightedElementId: commandSelectorId,
-    withNextButton: true,
+    autoSkipConditions: {
+      commandMode: 'RELOAD'
+    }
   },
   {
     text: `Click the button to reload.
@@ -185,6 +202,7 @@ The button under the selector will light up, and you can use it to reload your u
   },
 ];
 
+
 export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
 
@@ -194,9 +212,19 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     highlightedElementId,
     withNextButton,
     doOnMessage,
-    eventToFireOnNext: fireOnNext
+    eventToFireOnNext: fireOnNext,
+    autoSkipConditions,
+    allowNextConditions
   } = stages[currentStageIndex];
-  const { fireMessage, addDataConnectionEventListener } = useSimulatedConnection( {
+  const [ currentConditions, setCurrentConditions ] = useState<GameConditions>( {
+    commandMode: 'MOVE',
+    isUnitPlaced: false
+  } );
+
+  const {
+    fireMessage,
+    addDataConnectionEventListener
+  } = useSimulatedConnection( {
     onDisconnect: exitTutorial,
     handleSentMessage: ( { type } ) => {
 
@@ -244,12 +272,71 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     },
     [ currentStageIndex ]
   );
-  const nextStage = () => {
+  useEffect(
+    () => {
+
+      if ( autoSkipConditions ) {
+
+        const moveOn = getConditionState( autoSkipConditions );
+        if ( moveOn ) {
+
+          console.log( 'movedOn' );
+          nextStage();
+
+        }
+
+      }
+
+    },
+    [ currentStageIndex,
+      currentConditions ]
+  );
+
+  useSubscribeToGameEvent<typeof CommandModeChangeEvent>(
+    'commandModeChange',
+    ( { detail: { mode } } ) => {
+
+      setCurrentConditions( ( state ) => ( { ...state,
+        commandMode: mode } ) );
+
+    },
+    []
+  );
+  useSubscribeToGameEvent<typeof UnitPlacedEvent>(
+    'unitPlaced',
+    ( ) => {
+
+      setCurrentConditions( ( state ) => ( { ...state,
+        isUnitPlaced: true } ) );
+
+    },
+    []
+  );
+  function getConditionState ( conditions:Partial<GameConditions> ):boolean {
+
+    let moveOn = true;
+    for ( const x in conditions ) {
+
+      if ( conditions[x as keyof GameConditions] !== currentConditions[x as keyof GameConditions] ) {
+
+        moveOn = false;
+        break;
+
+      }
+
+    }
+    return moveOn;
+
+  }
+
+  function nextStage () {
 
     setStageIndex( ( index ) => index + 1 );
     fireOnNext && fireMessage( fireOnNext );
 
-  };
+  }
+  const disableNext = allowNextConditions && !getConditionState( allowNextConditions );
+
   return <div>TUTORIAL
     <button onClick={exitTutorial}>tutorial</button>
     <connectionContext.Provider
@@ -278,9 +365,14 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     <TutorialOverlay>
       <TextContainer>
         <div>
+          mode:{currentConditions.commandMode}
+          placed:{String( currentConditions.isUnitPlaced )} <br/>
           {text}
         </div>
-        {withNextButton && <button onClick={nextStage}>next</button>}
+        {withNextButton && <button
+          onClick={nextStage}
+          disabled={disableNext}
+        >next</button>}
         {currentStageIndex === stages.length - 1 && <button onClick={exitTutorial}>finish</button>}
       </TextContainer>
     </TutorialOverlay>
