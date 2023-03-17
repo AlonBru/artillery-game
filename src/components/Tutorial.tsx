@@ -50,6 +50,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     commandMode: 'MOVE',
     isUnitPlaced: false
   } );
+  const [ playerPosition, setPlayerPosition ] = useState<Vector2|null>( null );
 
   const {
     fireMessage,
@@ -79,6 +80,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
         if ( !elementToHighlight ) {
 
           throw new Error( `Element with id or class ${identifier} was not found` );
+
 
         }
         const prevZIndex = elementToHighlight?.style.zIndex;
@@ -146,10 +148,11 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
   );
   useSubscribeToGameEvent<typeof UnitPlacedEvent>(
     'unitPlaced',
-    ( ) => {
+    ( { detail: { position } } ) => {
 
       setCurrentConditions( ( state ) => ( { ...state,
         isUnitPlaced: true } ) );
+      setPlayerPosition( position );
 
     },
     []
@@ -212,6 +215,10 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
         {withNextButton && <button
           onClick={nextStage}
           disabled={disableNext}
+          title={disableNext
+            ? 'Please follow the instructions to continue'
+            : undefined
+          }
         >next</button>}
         {currentStageIndex === stages.length - 1 && <button onClick={exitTutorial}>finish</button>}
       </TextContainer>

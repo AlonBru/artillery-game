@@ -253,7 +253,7 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
     if ( command.type === 'INITIAL' ) {
 
-      fireGameEvent( new UnitPlacedEvent() );
+      fireGameEvent( new UnitPlacedEvent( command.target ) );
 
     }
     send( new CommandMessage( command.type === 'FIRE'

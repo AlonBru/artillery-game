@@ -15,15 +15,16 @@ export class CommandModeChangeEvent extends CustomEvent<{mode:SelectableCommandM
   }
 
 }
-export class UnitPlacedEvent extends CustomEvent<undefined> {
+export class UnitPlacedEvent extends CustomEvent<{position:Vector2}> {
 
 
   type = 'unitPlaced' as const;
 
-  constructor ( ) {
+  constructor ( position:Vector2 ) {
 
     super(
-      'unitPlaced'
+      'unitPlaced',
+      { detail: { position } }
     );
 
   }
