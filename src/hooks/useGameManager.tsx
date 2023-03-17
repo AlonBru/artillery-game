@@ -10,7 +10,7 @@ import { BOARD_SIZE } from '../constants';
 import { useConnectionContext } from './useConnection';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 import { RematchManager } from './RematchManager';
-import { fireGameEvent, UnitPlacedEvent } from '../helpers/customEvents';
+import { fireGameEvent, DeployCommandFiredEvent, MoveCommandFiredEvent } from '../helpers/customEvents';
 
 type GameLogic = {
   sendCommand( move:Command ):void;
@@ -251,9 +251,16 @@ export function GameLogicProvider ( { children }:Pick<ComponentPropsWithoutRef<'
 
   function sendCommand ( command: Command ) {
 
-    if ( command.type === 'INITIAL' ) {
+    switch ( command.type ) {
 
-      fireGameEvent( new UnitPlacedEvent( command.target ) );
+      case 'INITIAL':
+        fireGameEvent( new DeployCommandFiredEvent( command.target ) );
+        break;
+      case 'MOVE':
+        fireGameEvent( new MoveCommandFiredEvent( command.target ) );
+        break;
+      default:
+        break;
 
     }
     send( new CommandMessage( command.type === 'FIRE'

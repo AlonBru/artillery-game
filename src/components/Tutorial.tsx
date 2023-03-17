@@ -6,7 +6,9 @@ import { useSimulatedConnection } from '../hooks/useSimulatedConnection';
 import { connectionContext } from '../hooks/useConnection';
 
 import { useEffect, useState } from 'react';
-import { CommandModeChangeEvent, UnitPlacedEvent, useSubscribeToGameEvent } from '../helpers/customEvents';
+import {
+  CommandModeChangeEvent, DeployCommandFiredEvent, MoveCommandFiredEvent, useSubscribeToGameEvent
+} from '../helpers/customEvents';
 import { GameConditions, stages } from './tutorialStages';
 
 const darkOverlayZindex = 4;
@@ -146,12 +148,21 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     },
     []
   );
-  useSubscribeToGameEvent<typeof UnitPlacedEvent>(
+  useSubscribeToGameEvent<typeof DeployCommandFiredEvent>(
     'unitPlaced',
     ( { detail: { position } } ) => {
 
       setCurrentConditions( ( state ) => ( { ...state,
         isUnitPlaced: true } ) );
+      setPlayerPosition( position );
+
+    },
+    []
+  );
+  useSubscribeToGameEvent<typeof MoveCommandFiredEvent>(
+    'unitMoved',
+    ( { detail: { position } } ) => {
+
       setPlayerPosition( position );
 
     },

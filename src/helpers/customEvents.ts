@@ -15,7 +15,7 @@ export class CommandModeChangeEvent extends CustomEvent<{mode:SelectableCommandM
   }
 
 }
-export class UnitPlacedEvent extends CustomEvent<{position:Vector2}> {
+export class DeployCommandFiredEvent extends CustomEvent<{position:Vector2}> {
 
 
   type = 'unitPlaced' as const;
@@ -30,8 +30,24 @@ export class UnitPlacedEvent extends CustomEvent<{position:Vector2}> {
   }
 
 }
+export class MoveCommandFiredEvent extends CustomEvent<{position:Vector2}> {
+
+
+  type = 'unitMoved' as const;
+
+  constructor ( position:Vector2 ) {
+
+    super(
+      'unitMoved',
+      { detail: { position } }
+    );
+
+  }
+
+}
 type GameEvent = typeof CommandModeChangeEvent
-| typeof UnitPlacedEvent
+| typeof DeployCommandFiredEvent
+| typeof MoveCommandFiredEvent
 
 export function fireGameEvent ( event:InstanceType<GameEvent> ) {
 
