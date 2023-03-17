@@ -7,9 +7,10 @@ import { connectionContext } from '../hooks/useConnection';
 
 import { useEffect, useState } from 'react';
 import {
-  CommandModeChangeEvent, DeployCommandFiredEvent, MoveCommandFiredEvent, useSubscribeToGameEvent
+  CommandModeChangeEvent, DeployCommandFiredEvent, useSubscribeToGameEvent
 } from '../helpers/customEvents';
 import { GameConditions, stages } from './tutorialStages';
+import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 
 const darkOverlayZindex = 4;
 const TutorialOverlay = styled.div`
@@ -34,6 +35,10 @@ const TextContainer = styled.div`
   white-space: pre-wrap;
 `;
 
+const simulatedEnemyLocation = {
+  y: 0,
+  x: 1
+};
 export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
 
@@ -43,7 +48,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     highlightedElementId,
     withNextButton,
     moveNextOn,
-    eventToFireOnNext: fireOnNext,
+    eventToFireOnNext,
     autoSkipConditions,
     allowNextConditions,
     disableInteractionWithHighlight
@@ -52,8 +57,6 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     commandMode: 'MOVE',
     isUnitPlaced: false
   } );
-  const [ playerPosition, setPlayerPosition ] = useState<Vector2|null>( null );
-
   const {
     fireMessage,
     addDataConnectionEventListener
@@ -154,20 +157,11 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
       setCurrentConditions( ( state ) => ( { ...state,
         isUnitPlaced: true } ) );
-      setPlayerPosition( position );
 
     },
     []
   );
-  useSubscribeToGameEvent<typeof MoveCommandFiredEvent>(
-    'unitMoved',
-    ( { detail: { position } } ) => {
 
-      setPlayerPosition( position );
-
-    },
-    []
-  );
   function getConditionState ( conditions:Partial<GameConditions> ):boolean {
 
     let moveOn = true;
@@ -188,7 +182,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
   function nextStage () {
 
     setStageIndex( ( index ) => index + 1 );
-    fireOnNext && fireMessage( fireOnNext );
+    eventToFireOnNext && handleMessageToFire( eventToFireOnNext );
 
   }
   const disableNext = allowNextConditions && !getConditionState( allowNextConditions );
@@ -236,5 +230,26 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     </TutorialOverlay>
 
   </div>;
+  function handleMessageToFire ( type:GameMessage['type'] ) {
+
+    let eventToFireOnNext :GameMessage|null = null;
+    switch ( type ) {
+
+      case 'position':
+        eventToFireOnNext = new PositionMessage( simulatedEnemyLocation );
+        break;
+      case 'hit':
+        eventToFireOnNext = new HitMessage( simulatedEnemyLocation );
+        break;
+      case 'command':
+        eventToFireOnNext = new CommandMessage( null );
+        break;
+      default:
+        break;
+
+    }
+    eventToFireOnNext && fireMessage( eventToFireOnNext );
+
+  }
 
 }

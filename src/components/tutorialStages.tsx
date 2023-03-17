@@ -2,9 +2,7 @@ import {
   battleGridId, CraterClassName, lastKnownPositionId, playerUnitId
 } from './Board';
 import { communicationDisplayId, reloadButtonId } from './CommandPanel';
-import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 import { commandSelectorId } from './CommandSelector';
-import { BOARD_SIZE } from '../constants';
 import { instructionsPanelId } from './InstructionsMaker';
 
 export type GameConditions = {
@@ -33,8 +31,8 @@ type TutorialStage = {
   /** event type ( caused by player) to continue to next stage  */
   moveNextOn?:GameMessage['type'];
 
-  /** event ( simulated opponent) to fire when continuing to next stage */
-  eventToFireOnNext?:GameMessage;
+  /** event type ( simulated opponent) to fire when continuing to next stage */
+  eventToFireOnNext?:GameMessage['type'];
 
   /** conditions to allow clicking next button */
   allowNextConditions?:Partial<GameConditions>;
@@ -102,7 +100,7 @@ For the time being the tutorial will move right ahead as if your opponent is ver
 `,
     highlightedElementId: communicationDisplayId,
     withNextButton: true,
-    eventToFireOnNext: new CommandMessage( null )
+    eventToFireOnNext: 'command'
   },
   // opponent has placed their unit
   {
@@ -133,13 +131,13 @@ Try issuing a MOVE command by clicking a highlighted grid square.
 `,
     highlightedElementId: battleGridId,
     moveNextOn: 'command',
-    eventToFireOnNext: new CommandMessage( null ),
+    eventToFireOnNext: 'command',
   },
   // unit moved
   {
     text: `Your unit has moved to the selected grid area.
 `,
-    highlightedElementId: battleGridId,
+    highlightedElementId: playerUnitId,
     withNextButton: true,
     disableInteractionWithHighlight: true
   },
@@ -150,7 +148,7 @@ You can change command modes by clicking the command mode selector.
 Please select the FIRE mode to continue.
   `,
     highlightedElementId: commandSelectorId,
-    eventToFireOnNext: new CommandMessage( null ),
+    eventToFireOnNext: 'command',
     withNextButton: true,
     allowNextConditions: {
       commandMode: 'FIRE'
@@ -163,10 +161,7 @@ You can never fire on your own position.
 Please fire somewhere on the battle grid.
   `,
     highlightedElementId: battleGridId,
-    eventToFireOnNext: new PositionMessage( {
-      x: BOARD_SIZE - 1,
-      y: Math.round( Math.random() * BOARD_SIZE )
-    } ),
+    eventToFireOnNext: 'position',
     moveNextOn: 'command'
   },
   // shelled zone recognition
@@ -215,17 +210,14 @@ Select the RELOAD mode to continue.`,
     text: `Click the button to reload.
 `,
     highlightedElementId: reloadButtonId,
-    eventToFireOnNext: new CommandMessage( null ),
+    eventToFireOnNext: 'command',
     moveNextOn: 'command'
   },
   // how to win
   {
     text: 'You are now reloaded and are able to fire again.',
     highlightedElementId: reloadButtonId,
-    eventToFireOnNext: new HitMessage( {
-      x: BOARD_SIZE - 1,
-      y: Math.round( Math.random() * BOARD_SIZE )
-    } ),
+    eventToFireOnNext: 'hit',
     withNextButton: true
   },
   // endgame recognition

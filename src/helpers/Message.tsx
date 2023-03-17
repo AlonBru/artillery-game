@@ -4,25 +4,20 @@ abstract class GameMessageClass implements _IGameMessage {
 
   gameMessage = true as const;
 
-  type:GameMessage['type'];
+ abstract type:GameMessage['type'];
 
-  constructor ( type:GameMessage['type'] ) {
-
-    this.type = type;
-
-  }
 
 }
 export class HitMessage extends GameMessageClass implements IHitMessage {
 
-  type:'hit';
+  type: 'hit';
 
   data:Vector2;
 
   constructor ( data:Vector2 ) {
 
+    super();
     const type = 'hit';
-    super( type );
     this.type = type;
     this.data = data;
 
@@ -37,8 +32,8 @@ export class CommandMessage extends GameMessageClass implements ICommandMessage 
 
   constructor ( data:FireCommand|null ) {
 
+    super();
     const type = 'command' as const;
-    super( type );
     this.type = type;
 
     this.data = data;
@@ -54,9 +49,8 @@ export class PositionMessage extends GameMessageClass implements IPositionMessag
 
   constructor ( data:Vector2 ) {
 
+    super( );
     const type = 'position' as const;
-
-    super( type );
     this.type = type;
     this.data = data;
 
@@ -71,8 +65,8 @@ export class RematchMessage extends GameMessageClass implements IRematchMessage 
 
   constructor ( data:IRematchMessage['data'] ) {
 
+    super( );
     const type = 'rematch';
-    super( type );
     this.type = type;
     this.data = data;
 
