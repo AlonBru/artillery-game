@@ -1,4 +1,6 @@
-import { battleGridId, CraterClassName, lastKnownPositionId } from './Board';
+import {
+  battleGridId, CraterClassName, lastKnownPositionId, playerUnitId
+} from './Board';
 import { communicationDisplayId, reloadButtonId } from './CommandPanel';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 import { commandSelectorId } from './CommandSelector';
@@ -79,7 +81,7 @@ Units can only deploy on the bottom row, which is highlighted at the start of th
   // unit deployed
   {
     text: 'Great, notice your unit is on the board now.',
-    highlightedElementId: battleGridId,
+    highlightedElementId: playerUnitId,
     withNextButton: true
   },
   // waiting for opponent, status display recognition

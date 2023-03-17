@@ -7,6 +7,7 @@ import { useLastKnownPosition } from '../hooks/useLastKnownPosition';
 import { BoardCell } from './BoardCell';
 import { BoardColumn, GreenScreenDisplay } from './styled';
 
+export const playerUnitId = 'player-unit';
 export const lastKnownPositionId = 'last-known-marker';
 export const CraterClassName = 'shelled-area';
 
@@ -33,7 +34,10 @@ const BoardRoot = styled.main`
   padding: 3px;
   box-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
 `;
-const Player = styled.div.attrs( { title: 'Your unit' } )<{position?:Vector2}>`
+const Player = styled.div.attrs( {
+  title: 'Your unit',
+  id: playerUnitId
+} )<{position?:Vector2}>`
   width: 20px;
   height: 20px;
   margin: auto;
