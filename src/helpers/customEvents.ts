@@ -5,12 +5,14 @@ export class CommandModeChangeEvent extends CustomEvent<{mode:SelectableCommandM
 
   type = 'commandModeChange' as const;
 
+  override detail: {mode:SelectableCommandMode};
+
   constructor ( mode:SelectableCommandMode ) {
 
     super(
       'commandModeChange',
-      { detail: { mode } }
     );
+    this.detail = { mode };
 
   }
 
@@ -20,27 +22,30 @@ export class DeployCommandFiredEvent extends CustomEvent<{position:Vector2}> {
 
   type = 'unitPlaced' as const;
 
+  override detail: { position: Vector2; };
+
   constructor ( position:Vector2 ) {
 
     super(
       'unitPlaced',
-      { detail: { position } }
     );
+    this.detail = { position };
 
   }
 
 }
 export class MoveCommandFiredEvent extends CustomEvent<{position:Vector2}> {
 
-
   type = 'unitMoved' as const;
+
+  override detail: { position: Vector2; };
 
   constructor ( position:Vector2 ) {
 
     super(
-      'unitMoved',
-      { detail: { position } }
+      'unitMoved'
     );
+    this.detail = { position };
 
   }
 
