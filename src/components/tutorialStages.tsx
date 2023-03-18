@@ -1,9 +1,12 @@
 import {
-  battleGridId, CraterClassName, lastKnownPositionId, playerUnitId
+  battleGridId
 } from './Board';
+import {
+  craterClassName, lastKnownPositionClassName, playerUnitId, wreckClassName
+} from './BoardCell';
 import { communicationDisplayId, reloadButtonId } from './CommandPanel';
 import { commandSelectorId } from './CommandSelector';
-import { instructionsPanelId } from './InstructionsMaker';
+import { instructionsPageId, instructionsPanelId } from './InstructionsMaker';
 
 export type GameConditions = {
 
@@ -45,7 +48,7 @@ export const stages: Array<TutorialStage> = [
   // welcome
   {
     text: 'Welcome to unnamed artillery game!',
-    withNextButton: true
+    withNextButton: true,
   },
   // objective
   {
@@ -76,12 +79,7 @@ Units can only deploy on the bottom row, which is highlighted at the start of th
       isUnitPlaced: true
     }
   },
-  // unit deployed
-  {
-    text: 'Great, notice your unit is on the board now.',
-    highlightedElementId: playerUnitId,
-    withNextButton: true
-  },
+
   // waiting for opponent, status display recognition
   {
     text: `Notice this screen, it provides you with information you can use.
@@ -96,15 +94,22 @@ This means your opponent has not made a move yet in this turn.
     text: `The turns in the game take effect at the same time.
 This means that once you have made your move, you will need to wait for your opponent to make their.
 Then, both moves will take place and you will both see the results of the turn. 
-For the time being the tutorial will move right ahead as if your opponent is very quick to respond.
 `,
     highlightedElementId: communicationDisplayId,
     withNextButton: true,
     eventToFireOnNext: 'command'
   },
+  // unit deployed
+  {
+    text: `Great, notice your unit is on the board now.
+For the time being the tutorial will move right ahead as if your opponent is very quick to respond.    
+`,
+    highlightedElementId: playerUnitId,
+    withNextButton: true
+  },
   // opponent has placed their unit
   {
-    text: `Now your opponent has deployed their unit and the game can begin.
+    text: `Your opponent has deployed their unit and the game can begin.
 They do not see where you placed your unit, and you don't see their position. 
 Your status screen tells you that you are ready to go, and is requesting your command.
 `,
@@ -169,7 +174,7 @@ Please fire somewhere on the battle grid.
     text: `Notice the position you have fired on is now marked by an X.
 This is now a shelled area, which cannot be moved into.
 This can be used to block enemy movement.`,
-    highlightedElementId: CraterClassName,
+    highlightedElementId: craterClassName,
     withNextButton: true,
   },
   // last-known-position recognition
@@ -178,7 +183,7 @@ This can be used to block enemy movement.`,
 It will appear when you shoot, and mark where the enemy unit is at that time.
 The enemy will also be able to see your position when they shoot, of course.
 `,
-    highlightedElementId: lastKnownPositionId,
+    highlightedElementId: lastKnownPositionClassName,
     withNextButton: true,
   },
   // RELOAD recongnition
@@ -223,16 +228,21 @@ Select the RELOAD mode to continue.`,
   // endgame recognition
   {
     text: 'This is how it would look if you were to hit the enemy unit.',
-    highlightedElementId: battleGridId,
+    highlightedElementId: wreckClassName,
     disableInteractionWithHighlight: true,
     withNextButton: true
   },
   // instructions button recognition
   {
     text: `If you need to review the rules while in game, you can use the 'i' instructions button.
-Once you use it it will also cease to flash.
-To clear the instructions page, click it.`,
+Once you use it it will also cease to flash.`,
     highlightedElementId: instructionsPanelId,
+    withNextButton: true
+  },
+  // instructions page dismissal
+  {
+    text: 'To clear the instructions page, click it.',
+    highlightedElementId: instructionsPageId,
     withNextButton: true
   },
   // End

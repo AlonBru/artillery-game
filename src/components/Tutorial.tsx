@@ -36,15 +36,15 @@ const TutorialOverlayTotal = styled( TutorialOverlay )`
 `;
 
 const TextContainer = styled.div`
-  position: absolute;
+  position: relative;
   width: calc(100% - 40px);
+  min-height: 92px;
   top: 5px;
   left: 10px;
   background: white;
   color: black;
   padding:10px;
   border-radius: 5px;
-  min-height: 20px;
   display: flex; 
   justify-content: space-between;
   align-items: center;
@@ -52,9 +52,13 @@ const TextContainer = styled.div`
   z-index: ${darkOverlayZindex + 1};
 `;
 
-const simulatedEnemyLocation = {
+const simulatedEnemySpawnLocation = {
   y: 0,
   x: 1
+};
+const simulatedEnemyHitLocation = {
+  y: 0,
+  x: 2
 };
 export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
@@ -213,10 +217,10 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     switch ( type ) {
 
       case 'position':
-        eventToFireOnNext = new PositionMessage( simulatedEnemyLocation );
+        eventToFireOnNext = new PositionMessage( simulatedEnemySpawnLocation );
         break;
       case 'hit':
-        eventToFireOnNext = new HitMessage( simulatedEnemyLocation );
+        eventToFireOnNext = new HitMessage( simulatedEnemyHitLocation );
         break;
       case 'command':
         eventToFireOnNext = new CommandMessage( null );

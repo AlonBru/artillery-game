@@ -3,13 +3,8 @@ import {
 } from 'react';
 import styled from 'styled-components';
 import { useGameLogic } from '../hooks/useGameManager';
-import { useLastKnownPosition } from '../hooks/useLastKnownPosition';
-import { BoardCell } from './BoardCell';
+import { BoardCell, Player } from './BoardCell';
 import { BoardColumn, GreenScreenDisplay } from './styled';
-
-export const playerUnitId = 'player-unit';
-export const lastKnownPositionId = 'last-known-marker';
-export const CraterClassName = 'shelled-area';
 
 const Screen = styled( GreenScreenDisplay )`
   padding:30px;
@@ -34,42 +29,7 @@ const BoardRoot = styled.main`
   padding: 3px;
   box-shadow: ${( { theme } ) => theme.screen.text.glowColor} 0px 0 5px;
 `;
-const Player = styled.div.attrs( {
-  title: 'Your unit',
-  id: playerUnitId
-} )<{position?:Vector2}>`
-  width: 20px;
-  height: 20px;
-  margin: auto;
-  background: ${( { theme } ) => theme.screen.text.color};
-  border-radius: 50%;
-  position: relative;
-  filter: drop-shadow( 0 0 3px ${( { theme } ) => theme.screen.text.glowColor});
-  ::before{
-    content:"";
-    display: block;
-    position: absolute;
-    height: 50%;
-    width: 19%;
-    top: 0%;
-    left: 50%;
-    translate: -50% 0;
-    background: ${( { theme } ) => theme.screen.text.color};
-    transform-origin: top center;
-    transform: translateY(3px) translateX(6px) rotate(-134deg);  }
-  ::after{
-    content:"";
-    display: block;
-    position: absolute;
-    height: 40%;
-    width: 160%;
-    bottom: -7%;
-    left: 50%;
-    border-radius: 7px;
-    translate: -50% 0;
-    background: ${( { theme } ) => theme.screen.backgroundColor};
-    border: solid 2px ${( { theme } ) => theme.screen.text.color};
-  }
+export const PlayerPlacer = styled( Player )<{position?:Vector2}>`
   ${( { position } ) => {
 
     if ( !position ) {
@@ -87,84 +47,6 @@ const Player = styled.div.attrs( {
     `;
 
   }}
-`;
-const Wreck = styled.div`
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 16px 20px 16px;
-  border-color:  transparent transparent yellow transparent;
-  position: absolute;
-  bottom: 30%;
-  left: 50%;
-  margin: auto;
-  transform-origin: bottom;
-  animation: burning 1s alternate infinite;
-  ::after{
-    content:"";
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 3px 10px 10px;
-    border-color:  transparent transparent yellow transparent;
-    position: absolute;
-    top: 5px;
-    left:5px;
-    animation: burning .5s alternate infinite;
-    animation-delay: .5s;
-    opacity: .9;
-  }
-  ::before{
-    opacity: .9;
-    content:"";
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 10px 10px 3px;
-    border-color:  transparent transparent yellow transparent;
-    position: absolute;
-    top: 5px;
-    right: -5px;
-    animation: burning .3s alternate infinite;
-    animation-delay: .4s;
-
-  }
-  @keyframes burning {
-    from{
-      transform: translateX(-50%) scaleY(1);
-      filter: hue-rotate(0deg)
-    }
-    to{
-      transform: translateX(-50%) scaleY(1.5);
-      filter: hue-rotate(-40deg)
-    }
-  }
-`;
-const Crater = styled.div.attrs( { title: 'Shelled area' } )`
-  width: 100%;
-  height: 100%;
-  margin: auto;
-  /* background: black; */
-  position: relative;
-  /* border-radius: 50%; */
-  overflow: hidden;
-  ::after,::before{
-    content:"";
-    display: block;
-    position: absolute;
-    width: 4px;
-    height: 150%;
-    top: 50%;
-    left: 50%;
-    translate: -50% -50%;
-    background: ${( { theme } ) => theme.screen.text.color};
-  }
-  ::before{
-    transform: rotate(-45deg);
-  }
-  ::after{
-    transform: rotate(45deg);
-  }
 `;
 const Reticule = styled.div<{position:Vector2}>`
   margin: auto;
@@ -275,30 +157,7 @@ const Arrow = styled.div<{from:Vector2, position:Vector2}>`
     }
   } 
 `;
-const LastKnownPosition = styled.div.attrs( { title: 'opponent\'s last known position' } )`
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 25px 14px 0 14px;
-  border-color: ${( { theme } ) => theme.screen.text.color} transparent transparent transparent;
-  position: absolute;
-  top: 25%;
-  left: 50%;
-  margin: auto;
-  transform: rotateZ(360deg) translate(-50%);
-  filter: drop-shadow( 0 0 3px ${( { theme } ) => theme.screen.text.glowColor});
-  animation: blink .5s ;
-  animation-iteration-count: infinite;
-  @keyframes blink{
-    from {
-      opacity: 0.4;
-    }
-    to{
-      
-      opacity: 0.8;
-    }
-  }
-`;
+
 type BoardProps = {
   commandMode: CommandMode;
   cursor:Vector2|null;
@@ -329,7 +188,6 @@ export function Board ( {
 }: BoardProps ) {
 
   const { awaitingPlayerInput } = useGameLogic();
-  const lastKnown = useLastKnownPosition();
   const Marker = markerMapper[commandMode];
   return <Screen id={battleGridId}>
     <BoardRoot
@@ -351,35 +209,22 @@ export function Board ( {
       onMouseLeave={clearCursor}
     >
       {board.map( ( column, x ) => <BoardColumn key={x}>
-        {column.map( ( item, y ) => {
+        {column.map( ( item, y ) => <BoardCell
+          commandMode={commandMode}
+          playerPosition={playerPosition}
+          item={item}
+          x={x}
+          y={y}
+          key={`${x}+${y}`}
+          selectSector={() => {
 
-          const isLastKnown = x === lastKnown?.x && y === lastKnown.y;
-          const cratered = ( [ 'CRATER',
-            'DESTROYED' ] as Item[] ).includes( item );
-          return <BoardCell
-            commandMode={commandMode}
-            playerPosition={playerPosition}
-            x={x}
-            y={y}
-            key={`${x}+${y}`}
-            selectSector={() => {
+            setCursor( { x,
+              y } );
 
-              setCursor( { x,
-                y } );
-
-            }}
-            clearCursor={clearCursor}
-            dispatch={dispatch}
-          >
-            <>
-              {item === 'PLAYER' && <Player />}
-              {cratered && <Crater className={CraterClassName} />}
-              {item === 'DESTROYED' && <Wreck />}
-              {isLastKnown && <LastKnownPosition id={lastKnownPositionId}/>}
-            </>
-          </BoardCell>;
-
-        } )}
+          }}
+          clearCursor={clearCursor}
+          dispatch={dispatch}
+        /> )}
       </BoardColumn> )}
 
       { cursor !== null && <Marker

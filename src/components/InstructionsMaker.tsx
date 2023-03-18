@@ -7,6 +7,7 @@ import { commandPanelId } from './CommandPanel';
 import { LightupButton } from './LightupButton';
 
 export const instructionsPanelId = 'instructions-panel';
+export const instructionsPageId = 'instructions-page';
 
 const Root = styled.div`
   display: grid;
@@ -198,6 +199,7 @@ export function InstructionsMaker () {
       show={showPaper}
     >
       <Page
+        id={instructionsPageId}
         title="tear away"
         show={showPaper}
         tabIndex={showPaper
