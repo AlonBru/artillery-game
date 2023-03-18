@@ -5,7 +5,7 @@ import { GameLogicProvider } from '../hooks/useGameManager';
 import { useSimulatedConnection } from '../hooks/useSimulatedConnection';
 import { connectionContext } from '../hooks/useConnection';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   CommandModeChangeEvent, DeployCommandFiredEvent, useSubscribeToGameEvent
 } from '../helpers/customEvents';
@@ -256,7 +256,7 @@ function ElementHighlighter ( {
 
   const [ higlightedElement, setHighlightedElement ] = useState<HTMLElement|null>( null );
 
-  useEffect(
+  useLayoutEffect(
     () => {
 
       function highlight ( identifier:string ):()=>void {

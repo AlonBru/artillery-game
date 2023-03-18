@@ -6,7 +6,7 @@ import {
 } from './BoardCell';
 import { communicationDisplayId, reloadButtonId } from './CommandPanel';
 import { commandSelectorId } from './CommandSelector';
-import { instructionsPageId, instructionsPanelId } from './InstructionsMaker';
+import { instructionsPageId, instructionsButtonId } from './InstructionsMaker';
 
 export type GameConditions = {
 
@@ -229,7 +229,7 @@ Select the RELOAD mode to continue.`,
   {
     text: `If you need to review the rules while in game, you can use the 'i' instructions button.
 Once you use it it will also cease to flash.`,
-    highlightedElementId: instructionsPanelId,
+    highlightedElementId: instructionsButtonId,
     withNextButton: true
   },
   // instructions page dismissal
