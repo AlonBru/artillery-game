@@ -9,30 +9,47 @@ import { useEffect, useState } from 'react';
 import {
   CommandModeChangeEvent, DeployCommandFiredEvent, useSubscribeToGameEvent
 } from '../helpers/customEvents';
-import { GameConditions, stages } from './tutorialStages';
+import { GameConditions, stages, TutorialStage } from './tutorialStages';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 
 const darkOverlayZindex = 4;
-const TutorialOverlay = styled.div`
-  position: absolute;
-  background: #000000aa;
+const Root = styled.div`
+  --overlay-color:#000000aa;
+  position: relative;
   width: 100%;
   height: 100%;
   top:0;
+  overflow: hidden;
+`;
+const TutorialOverlay = styled.div`
+  position: absolute;
+  background: var(--overlay-color);
+  z-index: ${darkOverlayZindex};
+  width: 100%;
+  height: 100%;
+`;
+const TutorialOverlayTotal = styled( TutorialOverlay )`
+  position: absolute;
+  background: var(--overlay-color);
+  top:0;
   z-index: ${darkOverlayZindex};
 `;
+
 const TextContainer = styled.div`
-  position: relative;
+  position: absolute;
+  width: calc(100% - 40px);
+  top: 5px;
+  left: 10px;
   background: white;
   color: black;
   padding:10px;
-  margin:10px;
   border-radius: 5px;
   min-height: 20px;
   display: flex; 
   justify-content: space-between;
   align-items: center;
   white-space: pre-wrap;
+  z-index: ${darkOverlayZindex + 1};
 `;
 
 const simulatedEnemyLocation = {
@@ -57,6 +74,8 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     commandMode: 'MOVE',
     isUnitPlaced: false
   } );
+
+
   const {
     fireMessage,
     addDataConnectionEventListener
@@ -74,54 +93,6 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     }
     ,
   } );
-  useEffect(
-    () => {
-
-      function highlight ( identifier:string ):()=>void {
-
-
-        const elementToHighlight = document.getElementById( identifier ) ||
-        document.getElementsByClassName( identifier )?.[0] as HTMLElement;
-        if ( !elementToHighlight ) {
-
-          throw new Error( `Element with id or class ${identifier} was not found` );
-
-
-        }
-        const prevZIndex = elementToHighlight?.style.zIndex;
-        elementToHighlight.style.zIndex = `${darkOverlayZindex + 1}`;
-
-        const style = getComputedStyle( elementToHighlight );
-        const prevPosition = elementToHighlight?.style.position;
-        elementToHighlight.style.position = prevPosition || ( style.position !== 'static'
-          ? style.position
-          : null ) || 'relative';
-
-        const { pointerEvents } = elementToHighlight.style;
-
-        elementToHighlight.style.pointerEvents = disableInteractionWithHighlight
-          ? 'none'
-          : pointerEvents;
-
-
-        return function cleanUp () {
-
-          elementToHighlight.style.zIndex = prevZIndex;
-          elementToHighlight.style.position = prevPosition;
-          elementToHighlight.style.pointerEvents = pointerEvents;
-
-        };
-
-      }
-      if ( highlightedElementId ) {
-
-        return highlight( highlightedElementId );
-
-      }
-
-    },
-    [ currentStageIndex ]
-  );
   useEffect(
     () => {
 
@@ -187,8 +158,25 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
   }
   const disableNext = allowNextConditions && !getConditionState( allowNextConditions );
 
-  return <div>TUTORIAL
-    <button onClick={exitTutorial}>tutorial</button>
+  return <Root>
+    {/* TUTORIAL
+    <button onClick={exitTutorial}>tutorial</button> */}
+    <TextContainer>
+      <div>
+        {text}
+      </div>
+      {withNextButton && <button
+        onClick={nextStage}
+        disabled={disableNext}
+        title={disableNext
+          ? 'Please follow the instructions to continue'
+          : undefined
+        }
+      >next</button>}
+      {currentStageIndex === stages.length - 1 && <button onClick={exitTutorial}>finish</button>}
+    </TextContainer>
+
+
     <connectionContext.Provider
       value={{
         /* eslint-disable-next-line no-empty-function, @typescript-eslint/no-empty-function */
@@ -212,24 +200,13 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
         <GameUI />
       </GameLogicProvider>
     </connectionContext.Provider>
-    <TutorialOverlay>
-      <TextContainer>
-        <div>
-          {text}
-        </div>
-        {withNextButton && <button
-          onClick={nextStage}
-          disabled={disableNext}
-          title={disableNext
-            ? 'Please follow the instructions to continue'
-            : undefined
-          }
-        >next</button>}
-        {currentStageIndex === stages.length - 1 && <button onClick={exitTutorial}>finish</button>}
-      </TextContainer>
-    </TutorialOverlay>
 
-  </div>;
+    <ElementHighlighter
+      highlightedElementId={highlightedElementId}
+      disableInteractionWithHighlight={disableInteractionWithHighlight}
+    />
+
+  </Root>;
   function handleMessageToFire ( type:GameMessage['type'] ) {
 
     let eventToFireOnNext :GameMessage|null = null;
@@ -251,5 +228,96 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
     eventToFireOnNext && fireMessage( eventToFireOnNext );
 
   }
+
+}
+type ElementHighlighterProps = Pick<TutorialStage,
+  'highlightedElementId'|
+  'disableInteractionWithHighlight'
+>
+
+function ElementHighlighter ( {
+  highlightedElementId,
+  disableInteractionWithHighlight,
+}:ElementHighlighterProps ) {
+
+  const [ higlightedElement, setHighlightedElement ] = useState<HTMLElement|null>( null );
+
+  useEffect(
+    () => {
+
+      function highlight ( identifier:string ):()=>void {
+
+
+        const elementToHighlight = document.getElementById( identifier ) ||
+        document.getElementsByClassName( identifier )?.[0] as HTMLElement;
+        if ( !elementToHighlight ) {
+
+          throw new Error( `Element with id or class ${identifier} was not found` );
+
+
+        }
+        setHighlightedElement( elementToHighlight );
+        return function cleanUp () {
+
+          setHighlightedElement( null );
+
+        };
+
+      }
+      if ( highlightedElementId ) {
+
+        return highlight( highlightedElementId );
+
+      }
+
+    },
+    [ highlightedElementId ]
+  );
+  if ( !higlightedElement ) {
+
+    return <TutorialOverlayTotal/>;
+
+  }
+  const {
+    x, y, height, width
+  } = higlightedElement.getBoundingClientRect();
+  return <>
+
+    <TutorialOverlay // top
+      style={{
+        bottom: `calc( 100% - ${y}px  )`,
+        right: `calc(100% - ${x}px - ${width}px`,
+      }}
+    />
+    <TutorialOverlay // right
+      style={{
+        bottom: `calc( 100% - ${y + height}px  )`,
+        left: x + width,
+      }}
+    />
+    <TutorialOverlay // bottom
+      style={{
+        top: y + height,
+        left: x,
+      }}
+    />
+    <TutorialOverlay // left
+      style={{
+        top: y,
+        right: `calc( 100% - ${x}px  )`,
+      }}
+    />
+
+    {disableInteractionWithHighlight && <div
+      style={{
+        background: 'transparent',
+        position: 'absolute',
+        width,
+        top: y,
+        left: x,
+        height
+      }}
+    />}
+  </>;
 
 }

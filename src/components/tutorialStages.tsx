@@ -13,7 +13,7 @@ export type GameConditions = {
   /** whether the player has placed their unit */
   isUnitPlaced:boolean
 }
-type TutorialStage = {
+export type TutorialStage = {
 
   /** tutorial text  */
   text: string;
