@@ -30,9 +30,13 @@ export function useConnectionContext ( ) {
 
 type Props = {
   children: ReactNode | ReactNode[];
+  startTutorial():void;
 };
 
-export function ConnectionProvider ( { children }: Props ) {
+export function ConnectionProvider ( {
+  children,
+  startTutorial
+}: Props ) {
 
   const {
     id,
@@ -57,6 +61,7 @@ export function ConnectionProvider ( { children }: Props ) {
       peerError={peerError}
       status={status}
       setId={setId}
+      startTutorial={startTutorial}
     />
     {gameReady && <connectionContext.Provider value={{
       sendMessage,

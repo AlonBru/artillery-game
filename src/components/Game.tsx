@@ -29,7 +29,9 @@ export function Game () {
   return <Root>
     <GameContainer>
       {!isTutorial
-        ? <ConnectionProvider>
+        ? <ConnectionProvider
+          startTutorial={() => setTutorial( true )}
+        >
           <GameLogicProvider>
             <GameUI />
           </GameLogicProvider>
@@ -38,7 +40,6 @@ export function Game () {
       }
     </GameContainer>
     <Credits>
-      <button onClick={() => setTutorial( true )}>tutorial</button>
       The Untitled Artillery Game was created by AlonBru. You are welcome to check out the source code or contribute <a
         href="https://github.com/AlonBru/artillery-game"
         target="_blank" rel="noreferrer"
