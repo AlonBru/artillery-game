@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import styled, { css } from 'styled-components';
 
+export const playerIdButtonId = 'player-peer-id';
+export const copyIdButtonId = 'copy-id-button';
+export const copyLinkButtonId = 'copy-link-button';
+
 const IdSection = styled.section`
   display: grid;
   grid-template-areas: "id copy" "id link";
@@ -236,6 +240,7 @@ export function IdDisplay ( {
         </>
         : <>
           <IdButton
+            id={playerIdButtonId}
             ref={idContainerRef}
             tabIndex={0}
             title="Type a different id"
@@ -251,6 +256,7 @@ export function IdDisplay ( {
             {id || 'Loading...'}
           </IdButton>
           <ClipboardButton
+            id={copyIdButtonId}
             title="Copy id to clipboard"
             onClick={copyId}
           >
@@ -258,6 +264,7 @@ export function IdDisplay ( {
           </ClipboardButton>
           <LinkButton
             title="Copy direct link for your peer"
+            id={copyLinkButtonId}
             onClick={() => {
 
               const { origin, pathname } = document.location;

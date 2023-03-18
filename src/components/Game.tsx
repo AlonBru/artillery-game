@@ -28,16 +28,14 @@ export function Game () {
 
   return <Root>
     <GameContainer>
-      {!isTutorial
-        ? <ConnectionProvider
-          startTutorial={() => setTutorial( true )}
-        >
-          <GameLogicProvider>
-            <GameUI />
-          </GameLogicProvider>
-        </ConnectionProvider>
-        : <Tutorial exitTutorial={() => setTutorial( false )}/>
-      }
+      {isTutorial && <Tutorial exitTutorial={() => setTutorial( false )}/> }
+      <ConnectionProvider
+        startTutorial={() => setTutorial( true )}
+      >
+        <GameLogicProvider>
+          <GameUI />
+        </GameLogicProvider>
+      </ConnectionProvider>
     </GameContainer>
     <Credits>
       The Untitled Artillery Game was created by AlonBru. You are welcome to check out the source code or contribute <a

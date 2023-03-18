@@ -9,7 +9,8 @@ import { useEffect, useState } from 'react';
 import {
   CommandModeChangeEvent, DeployCommandFiredEvent, useSubscribeToGameEvent
 } from '../helpers/customEvents';
-import { GameConditions, stages, TutorialStage } from './tutorialStages';
+import { GameConditions, stages as gameTutorialStages, TutorialStage } from './tutorialStages';
+import { stages as connectionStages } from './connectionTutorialStages';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
 
 const darkOverlayZindex = 4;
@@ -20,6 +21,11 @@ const Root = styled.div`
   height: 100%;
   top:0;
   overflow: hidden;
+`;
+const TutorialContainer = styled.div`
+  z-index: ${darkOverlayZindex - 1};
+  position: relative;
+
 `;
 const TutorialOverlay = styled.div`
   position: absolute;
@@ -38,7 +44,7 @@ const TutorialOverlayTotal = styled( TutorialOverlay )`
 const TextContainer = styled.div`
   position: relative;
   width: calc(100% - 40px);
-  min-height: 92px;
+  min-height: 95px;
   top: 5px;
   left: 10px;
   background: white;
@@ -60,6 +66,8 @@ const simulatedEnemyHitLocation = {
   y: 0,
   x: 2
 };
+const stages = connectionStages.concat( gameTutorialStages );
+
 export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
 
@@ -161,6 +169,7 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
 
   }
   const disableNext = allowNextConditions && !getConditionState( allowNextConditions );
+  const isGameTutorial = currentStageIndex >= connectionStages.length;
 
   return <Root>
     {/* TUTORIAL
@@ -179,31 +188,32 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
       >next</button>}
       {currentStageIndex === stages.length - 1 && <button onClick={exitTutorial}>finish</button>}
     </TextContainer>
-
-
-    <connectionContext.Provider
-      value={{
+    {isGameTutorial && <TutorialContainer>
+      <connectionContext.Provider
+        value={{
         /* eslint-disable-next-line no-empty-function, @typescript-eslint/no-empty-function */
-        sendMessage: ( { type } ) => {
+          sendMessage: ( { type } ) => {
 
-          const advanceStage = moveNextOn === type;
-          if ( advanceStage ) {
+            const advanceStage = moveNextOn === type;
+            if ( advanceStage ) {
 
-            nextStage();
+              nextStage();
 
-          }
+            }
 
-        },
-        addDataConnectionEventListener,
-        disconnect: exitTutorial
+          },
+          addDataConnectionEventListener,
+          disconnect: exitTutorial
 
-      }}
+        }}
 
-    >
-      <GameLogicProvider>
-        <GameUI />
-      </GameLogicProvider>
-    </connectionContext.Provider>
+      >
+        <GameLogicProvider>
+          <GameUI />
+        </GameLogicProvider>
+      </connectionContext.Provider>
+    </TutorialContainer>
+    }
 
     <ElementHighlighter
       highlightedElementId={highlightedElementId}
@@ -312,7 +322,7 @@ function ElementHighlighter ( {
       }}
     />
 
-    {disableInteractionWithHighlight && <div
+    {disableInteractionWithHighlight && <TutorialOverlay
       style={{
         background: 'transparent',
         position: 'absolute',

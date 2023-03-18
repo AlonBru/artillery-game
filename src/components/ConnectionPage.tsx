@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IdDisplay } from './IdDisplay';
 
+export const connectionInputContainerId = 'game-connect-input';
+
 const Root = styled( 'div' )<{connected:boolean}>`
   --panel-width: 15px;
   font-family: 'Courier New', Courier, monospace;
@@ -156,6 +158,7 @@ export function ConnectionPage ( {
     <br />
     Send it to a friend or type in their id to connect: <br />
     <div
+      id={connectionInputContainerId}
       style={{
         display: 'flex',
         gap: 5

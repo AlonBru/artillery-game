@@ -45,19 +45,12 @@ export type TutorialStage = {
 }
 
 export const stages: Array<TutorialStage> = [
-  // welcome
+  // welcome, objective
   {
-    text: 'Welcome to unnamed artillery game!',
-    withNextButton: true,
-  },
-  // objective
-  {
-    text: 'The aim of the game is to destroy the enemy unit while avoiding the same fate for your unit.',
-    withNextButton: true
-  },
-  // controls header
-  {
-    text: 'First, let\'s get to know the controls:',
+    text: `Welcome to the actual game.
+The aim of the game is to destroy the enemy unit while avoiding the same fate for your unit.
+First, let's get to know the controls:
+`,
     withNextButton: true
   },
   // battle grid recognition
