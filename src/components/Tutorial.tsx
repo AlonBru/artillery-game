@@ -58,6 +58,40 @@ const TextContainer = styled.div`
   white-space: pre-wrap;
   z-index: ${darkOverlayZindex + 1};
 `;
+const LeaveTutorialButton = styled.button`
+  position: absolute;
+  right: 5px ;
+  top: 5px ;
+  background: inherit;
+  border:unset;
+  color:black;
+  font-family: monospace;
+  font-size:20px;
+  width: 20px;
+  height: 20px;
+  line-height: 10px;
+  cursor: pointer;
+  ::after{
+    transition: .2s;
+    content: 'leave tutorial';
+    position: absolute;
+    right: 20px;
+    white-space: nowrap;
+    font-size: 1rem;
+    max-width: 0;
+    text-align: right;
+    overflow: hidden;
+    border-bottom:2px solid red;
+  }
+  :hover::after, :focus::after{
+    position: absolute;
+    right:17px;
+    max-width: 20ch;
+    height: 12px;
+    white-space: nowrap;
+    font-size: 1rem;
+  }
+`;
 
 const simulatedEnemySpawnLocation = {
   y: 0,
@@ -179,14 +213,27 @@ export function Tutorial ( { exitTutorial }: { exitTutorial(): void; } ) {
       <div>
         {text}
       </div>
-      {withNextButton && <button
-        onClick={nextStage}
-        disabled={disableNext}
-        title={disableNext
-          ? 'Please follow the instructions to continue'
-          : undefined
-        }
-      >next</button>}
+      <LeaveTutorialButton
+        onClick={exitTutorial}
+      >
+          X
+      </LeaveTutorialButton>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {withNextButton && <button
+          onClick={nextStage}
+          disabled={disableNext}
+          title={disableNext
+            ? 'Please follow the instructions to continue'
+            : undefined
+          }
+        >next</button>}
+
+      </div>
       {currentStageIndex === stages.length - 1 && <button onClick={exitTutorial}>finish</button>}
     </TextContainer>
     {isGameTutorial && <TutorialContainer>
