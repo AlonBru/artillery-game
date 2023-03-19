@@ -5,6 +5,8 @@ import styled from 'styled-components';
 import { useState } from 'react';
 import { Tutorial } from './Tutorial';
 
+export const gameRootId = 'game-root';
+
 const Root = styled.div`
   display: grid;
   grid-template-rows: 1fr auto;
@@ -26,7 +28,9 @@ export function Game () {
 
   const [ isTutorial, setTutorial ] = useState( false );
 
-  return <Root>
+  return <Root
+    id={gameRootId}
+  >
     <GameContainer>
       {isTutorial && <Tutorial exitTutorial={() => setTutorial( false )}/> }
       <ConnectionProvider

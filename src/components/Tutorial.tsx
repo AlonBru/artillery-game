@@ -12,6 +12,7 @@ import {
 import { GameConditions, stages as gameTutorialStages, TutorialStage } from './tutorialStages';
 import { stages as connectionStages } from './connectionTutorialStages';
 import { CommandMessage, HitMessage, PositionMessage } from '../helpers/Message';
+import { gameRootId } from './Game';
 
 const darkOverlayZindex = 4;
 const Root = styled.div`
@@ -249,12 +250,24 @@ type ElementHighlighterProps = Pick<TutorialStage,
   'disableInteractionWithHighlight'
 >
 
+/**
+ * Edges measured from top left
+ */
+type PositioningData = {
+  leftEdge:number;
+  topEdge:number;
+  rightEdge:number;
+  bottomEdge:number;
+  width:number;
+  height:number;
+}
+
 function ElementHighlighter ( {
   highlightedElementId,
   disableInteractionWithHighlight,
 }:ElementHighlighterProps ) {
 
-  const [ higlightedElement, setHighlightedElement ] = useState<HTMLElement|null>( null );
+  const [ higlightedElementPosition, setHighlightedElementPosition ] = useState<PositioningData|null>( null );
 
   useLayoutEffect(
     () => {
@@ -264,16 +277,36 @@ function ElementHighlighter ( {
 
         const elementToHighlight = document.getElementById( identifier ) ||
         document.getElementsByClassName( identifier )?.[0] as HTMLElement;
+        const gameRoot = document.getElementById( gameRootId );
         if ( !elementToHighlight ) {
 
           throw new Error( `Element with id or class ${identifier} was not found` );
 
 
         }
-        setHighlightedElement( elementToHighlight );
+        if ( !gameRoot ) {
+
+          throw new Error( `Element with id ${gameRootId} was not found` );
+
+
+        }
+        const elementRect = elementToHighlight.getBoundingClientRect();
+        const rootRect = gameRoot.getBoundingClientRect();
+        const x = elementRect.x - rootRect.x;
+        const y = elementRect.y - rootRect.y;
+        const fromTop = y + elementRect.height;
+        const fromLeft = x + elementRect.width;
+        setHighlightedElementPosition( {
+          rightEdge: fromLeft,
+          bottomEdge: fromTop,
+          leftEdge: x,
+          topEdge: y,
+          width: elementRect.width,
+          height: elementRect.height
+        } );
         return function cleanUp () {
 
-          setHighlightedElement( null );
+          setHighlightedElementPosition( null );
 
         };
 
@@ -287,38 +320,39 @@ function ElementHighlighter ( {
     },
     [ highlightedElementId ]
   );
-  if ( !higlightedElement ) {
+  if ( !higlightedElementPosition ) {
 
     return <TutorialOverlayTotal/>;
 
   }
   const {
-    x, y, height, width
-  } = higlightedElement.getBoundingClientRect();
+    leftEdge, topEdge, rightEdge, bottomEdge, width, height
+  } = higlightedElementPosition;
+
   return <>
 
     <TutorialOverlay // top
       style={{
-        bottom: `calc( 100% - ${y}px  )`,
-        right: `calc(100% - ${x}px - ${width}px`,
+        bottom: `calc( 100% - ${topEdge}px  )`,
+        right: `calc(100% - ${rightEdge}px`,
       }}
     />
     <TutorialOverlay // right
       style={{
-        bottom: `calc( 100% - ${y + height}px  )`,
-        left: x + width,
+        bottom: `calc( 100% - ${bottomEdge}px  )`,
+        left: rightEdge,
       }}
     />
     <TutorialOverlay // bottom
       style={{
-        top: y + height,
-        left: x,
+        top: bottomEdge,
+        left: leftEdge,
       }}
     />
     <TutorialOverlay // left
       style={{
-        top: y,
-        right: `calc( 100% - ${x}px  )`,
+        top: topEdge,
+        right: `calc( 100% - ${leftEdge}px  )`,
       }}
     />
 
@@ -327,8 +361,8 @@ function ElementHighlighter ( {
         background: 'transparent',
         position: 'absolute',
         width,
-        top: y,
-        left: x,
+        top: topEdge,
+        left: leftEdge,
         height
       }}
     />}
