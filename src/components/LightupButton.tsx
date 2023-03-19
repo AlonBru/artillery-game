@@ -80,13 +80,16 @@ export function LightupButton ( {
   size = 80,
   lighted,
   disabled,
+  id,
   ...props
 }: Props ) {
 
   const [ clicked, setClicked ] = useState( false );
   return <div
+    id={id}
     style={{
-      margin: '10px auto',
+      margin: '0 auto',
+      padding: 10,
       width: 'fit-content',
       display: 'flex',
       flexDirection: 'column',

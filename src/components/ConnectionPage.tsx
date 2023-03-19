@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IdDisplay } from './IdDisplay';
 
+export const connectionInputContainerId = 'game-connect-input';
+
 const Root = styled( 'div' )<{connected:boolean}>`
   --panel-width: 15px;
   font-family: 'Courier New', Courier, monospace;
@@ -50,7 +52,6 @@ const Root = styled( 'div' )<{connected:boolean}>`
     outline-width: 4px;
   }
 `;
-
 const GameTitle = styled.h1`
   font-family:top-secret;
   color: #2ac000;
@@ -60,6 +61,12 @@ const ErrorMessage = styled.span`
   font-weight: bold;
   transition: all .2s;
 `;
+const TutorialButton = styled.button`
+  padding:5px;
+  margin-top: 10px;
+  font-weight: 600;
+`;
+
 
 type Props = {
   id: string | undefined;
@@ -69,6 +76,7 @@ type Props = {
   disconnectReason: string | undefined;
   setId( newId: string ): void;
   peerError?: string;
+  startTutorial():void;
 };
 
 export function ConnectionPage ( {
@@ -78,7 +86,8 @@ export function ConnectionPage ( {
   status,
   disconnectReason,
   setId,
-  peerError
+  peerError,
+  startTutorial
 }:Props ) {
 
   const [ peerId, setPeerId ] = useState( () => {
@@ -149,6 +158,7 @@ export function ConnectionPage ( {
     <br />
     Send it to a friend or type in their id to connect: <br />
     <div
+      id={connectionInputContainerId}
       style={{
         display: 'flex',
         gap: 5
@@ -217,6 +227,8 @@ export function ConnectionPage ( {
     {!isLoading && disconnectReason && <span>
       Disconnected due to: {disconnectReason}
     </span>}
+    <TutorialButton onClick={startTutorial}>How to play</TutorialButton>
+
   </Root>;
 
 

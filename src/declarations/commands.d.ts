@@ -21,6 +21,7 @@ type PlaceCommand = {
 type Command = MoveCommand | FireCommand | ReloadCommand | PlaceCommand;
 
 type CommandMode = Command['type'];
+type SelectableCommandMode = Exclude<CommandMode, 'INITIAL'>
 
 /**
  * Commands that require a board update

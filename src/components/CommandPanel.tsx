@@ -12,6 +12,7 @@ import { Modal } from './Modal';
 import { GreenScreenDisplay } from './styled';
 
 export const commandPanelId = 'command-panel';
+export const reloadButtonId = 'reload-button';
 
 
 const BasePanel = styled.aside`
@@ -47,7 +48,7 @@ const Screw = styled.div<{rotate:number}>`
 const Main = styled.main`
 `;
 
-const CommunticationDisplay = styled( GreenScreenDisplay )`
+const CommunicationDisplay = styled( GreenScreenDisplay )`
   padding: 14px;
   height: 170px;
   max-width: 400px;
@@ -176,6 +177,7 @@ function PanelBase ( { children }:{children:ReactNode|ReactNode[]} ) {
 
 }
 
+export const communicationDisplayId = 'comm-display';
 
 export function CommandPanel ( {
   commandMode,
@@ -195,7 +197,9 @@ export function CommandPanel ( {
 
 
     return <PanelBase>
-      <CommunticationDisplay>
+      <CommunicationDisplay
+        id={communicationDisplayId}
+      >
         { awaitingPlayerInput && <>
           Where should we deploy general? <br/>
         </>}
@@ -208,13 +212,14 @@ export function CommandPanel ( {
           <WaitingLine>
             awainting an update from the field
           </WaitingLine>}
-      </CommunticationDisplay>
+      </CommunicationDisplay>
       <CommandSelector
         commandMode={commandMode}
         setCommandMode={undefined}
         disabled={!awaitingPlayerInput }
       />
       <LightupButton
+        id={reloadButtonId}
         label={'COMMAND'}
         onClick={dispatch}
         lighted={false}
@@ -231,7 +236,9 @@ export function CommandPanel ( {
   commandMode === 'RELOAD';
 
   return <PanelBase >
-    <CommunticationDisplay>
+    <CommunicationDisplay
+      id={communicationDisplayId}
+    >
 
       {endGame
         ? <>
@@ -274,13 +281,14 @@ export function CommandPanel ( {
           }
         </>
       }
-    </CommunticationDisplay>
+    </CommunicationDisplay>
     <CommandSelector
       commandMode={commandMode}
-      setCommandMode={setCommandMode}
+      setCommandMode={setCommandMode as Dispatch<SetStateAction<SelectableCommandMode>>}
       disabled={!awaitingPlayerInput }
     />
     <LightupButton
+      id={reloadButtonId}
       label={'COMMAND'}
       lighted={canAct}
       disabled={!canAct}

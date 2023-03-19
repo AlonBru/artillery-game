@@ -2,6 +2,10 @@ import { ConnectionProvider } from '../hooks/useConnection';
 import { GameUI } from './GameUI';
 import { GameLogicProvider } from '../hooks/useGameManager';
 import styled from 'styled-components';
+import { useState } from 'react';
+import { Tutorial } from './Tutorial';
+
+export const gameRootId = 'game-root';
 
 const Root = styled.div`
   display: grid;
@@ -22,9 +26,16 @@ const Credits = styled.footer`
 
 export function Game () {
 
-  return <Root>
+  const [ isTutorial, setTutorial ] = useState( false );
+
+  return <Root
+    id={gameRootId}
+  >
     <GameContainer>
-      <ConnectionProvider>
+      {isTutorial && <Tutorial exitTutorial={() => setTutorial( false )}/> }
+      <ConnectionProvider
+        startTutorial={() => setTutorial( true )}
+      >
         <GameLogicProvider>
           <GameUI />
         </GameLogicProvider>

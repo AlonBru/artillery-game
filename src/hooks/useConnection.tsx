@@ -4,8 +4,7 @@ import {
 import { usePeer } from './usePeer';
 import { ConnectionPage } from '../components/ConnectionPage';
 
-
-interface Connection {
+export interface GameConnection {
   sendMessage( message:GameMessage ):void
 
   /** returns a cleanup function */
@@ -13,14 +12,14 @@ interface Connection {
   disconnect():void;
 }
 
-const connectionContext = createContext<Connection|null>( null );
+export const connectionContext = createContext<GameConnection|null>( null );
 
 export function useConnectionContext ( ) {
 
   const context = useContext( connectionContext );
   if ( !context ) {
 
-    throw new Error( 'trying touseConnection without provider' );
+    throw new Error( 'trying to useConnectionContext without provider' );
 
   }
 
@@ -31,9 +30,13 @@ export function useConnectionContext ( ) {
 
 type Props = {
   children: ReactNode | ReactNode[];
+  startTutorial():void;
 };
 
-export function ConnectionProvider ( { children }: Props ) {
+export function ConnectionProvider ( {
+  children,
+  startTutorial
+}: Props ) {
 
   const {
     id,
@@ -58,6 +61,7 @@ export function ConnectionProvider ( { children }: Props ) {
       peerError={peerError}
       status={status}
       setId={setId}
+      startTutorial={startTutorial}
     />
     {gameReady && <connectionContext.Provider value={{
       sendMessage,

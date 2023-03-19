@@ -6,6 +6,9 @@ import { battleGridId } from './Board';
 import { commandPanelId } from './CommandPanel';
 import { LightupButton } from './LightupButton';
 
+export const instructionsButtonId = 'instructions-panel';
+export const instructionsPageId = 'instructions-page';
+
 const Root = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
@@ -191,11 +194,12 @@ const rules = [
 export function InstructionsMaker () {
 
   const [ showPaper, setShow ] = useState<boolean>( );
-  return <Root>
+  return <Root >
     <InstructionPrinter
       show={showPaper}
     >
       <Page
+        id={instructionsPageId}
         title="tear away"
         show={showPaper}
         tabIndex={showPaper
@@ -330,6 +334,7 @@ function IndsructionsButton ( { setShow, showPaper }:{
   );
 
   return <LightupButton
+    id={instructionsButtonId}
     onClick={() => {
 
       setShow( true );
